@@ -168,15 +168,15 @@ export default function FormBuilder() {
     };
 
     return (
-        <div className="flex h-screen">
+        <div className="flex flex-col md:flex-row h-screen">
             <Toolbox
                 onDragStart={setDraggedToolboxField}
                 onDragEnd={() => setDraggedToolboxField(null)}
                 onAddSection={addNewSection}
             />
 
-            <div className="flex-1 p-6 overflow-auto">
-                <div className="flex space-x-2 mb-4">
+            <div className="flex-1 p-4 overflow-auto max-h-screen">
+                <div className="flex flex-wrap gap-2 justify-start items-center mb-4">
                     {sections.map(section => (
                         <div key={section.id} className="relative">
                             {editingSectionId === section.id ? (
@@ -228,7 +228,6 @@ export default function FormBuilder() {
                         {sections.find(s => s.id === activeSection && !s.collapsed)?.rows.map(row => (
                             <div key={row.id} className="mb-8">
                                 <div className="flex justify-between items-center mb-2">
-                                    {/* <h3 className="text-sm font-medium text-gray-500">Row: {row.id}</h3> */}
                                     <button
                                         className="text-xs px-2 py-1 bg-green-600 text-white rounded"
                                         disabled={row.columns.length >= 3}
@@ -243,8 +242,8 @@ export default function FormBuilder() {
                                             row.columns.length === 1
                                                 ? 'w-full'
                                                 : row.columns.length === 2
-                                                    ? 'w-1/2'
-                                                    : 'w-1/3';
+                                                    ? 'w-full sm:w-1/2'
+                                                    : 'w-full sm:w-1/3';
                                         return (<div key={col.id} className={`${colWidth} relative group rounded pt-6 px-2`}>
                                             <DndContext onDragEnd={e => {
                                                 const { active, over } = e;
@@ -316,16 +315,16 @@ export default function FormBuilder() {
                             <div key={section.id} className="bg-white p-4 rounded shadow border">
                                 <h2 className="font-bold mb-2">{section.name}</h2>
                                 {!section.collapsed && section.rows.map(row => (
-                                    <div key={row.id} className="flex gap-4 mb-4">
+                                    <div key={row.id} className="flex flex-col sm:flex-row gap-4 mb-4">
                                         {row.columns.map(col => (
-                                            <div key={col.id} className="w-1/3 space-y-3">
+                                            <div key={col.id} className="w-full sm:w-1/2 lg:w-1/3 space-y-3">
                                                 {col.fields.map(field => (
                                                     <div key={field.id}>
                                                         <label className="block font-medium">{field.label}</label>
                                                         {field.type === 'text' && <input placeholder={field.placeholder} className="border p-1 rounded w-full" />}
                                                         {field.type === 'label' && <div>{field.label}</div>}
                                                         {field.type === 'checkbox' && <input type="checkbox" />}
-                                                        {field.type === 'date' && <input type="date" className="border p-1 rounded" />}
+                                                        {field.type === 'date' && <input type="date" className="border p-1 rounded w-full" />}
                                                     </div>
                                                 ))}
                                             </div>

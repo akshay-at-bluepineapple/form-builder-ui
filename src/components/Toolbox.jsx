@@ -9,7 +9,7 @@ const TOOLBOX_FIELDS = [
 
 export default function Toolbox({ onDragStart, onDragEnd, onAddSection }) {
   return (
-    <div className="w-64 p-4 bg-gray-100 border-r">
+    <div className="w-full md:w-64 p-4 bg-gray-100 border-b md:border-b-0 md:border-r">
       <h2 className="text-lg font-bold mb-4">Toolbox</h2>
       {TOOLBOX_FIELDS.map(field => (
         <div
