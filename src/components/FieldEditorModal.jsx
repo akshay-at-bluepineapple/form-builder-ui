@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 export default function FieldEditorModal({ field, onClose, onSave }) {
   const [localField, setLocalField] = useState({ ...field });
@@ -11,19 +11,29 @@ export default function FieldEditorModal({ field, onClose, onSave }) {
         <input
           className="w-full border p-2 rounded mb-4"
           value={localField.label}
-          onChange={(e) => setLocalField({ ...localField, label: e.target.value })}
+          onChange={(e) =>
+            setLocalField({ ...localField, label: e.target.value })
+          }
         />
         <label className="block mb-2 text-sm font-medium">Placeholder</label>
         <input
           className="w-full border p-2 rounded mb-4"
-          value={localField.placeholder || ''}
-          onChange={(e) => setLocalField({ ...localField, placeholder: e.target.value })}
+          value={localField.placeholder || ""}
+          onChange={(e) =>
+            setLocalField({ ...localField, placeholder: e.target.value })
+          }
+        />
+        <label className="block mb-2 text-sm font-medium">Required</label>
+        <input
+          className="mr-2"
+          type="checkbox"
+          checked={localField.required}
+          onChange={(e) =>
+            setLocalField({ ...localField, required: e.target.checked })
+          }
         />
         <div className="flex justify-end space-x-2">
-          <button
-            className="px-4 py-2 bg-gray-300 rounded"
-            onClick={onClose}
-          >
+          <button className="px-4 py-2 bg-gray-300 rounded" onClick={onClose}>
             Cancel
           </button>
           <button
