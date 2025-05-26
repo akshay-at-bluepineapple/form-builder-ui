@@ -35,6 +35,7 @@ export default function FormBuilder() {
   const [tempSectionName, setTempSectionName] = useState("");
   const [isMobileView, setIsMobileView] = useState(false);
   const [showToolbox, setShowToolbox] = useState(true);
+  const [fieldValues, setFieldValues] = useState({});
 
   useEffect(() => {
     const checkMobileView = () => {
@@ -228,6 +229,13 @@ export default function FormBuilder() {
             }
       )
     );
+  };
+
+  const handleFieldInputChange = (fieldId, fieldValue) => {
+    setFieldValues((prev) => ({
+      ...prev,
+      [fieldId]: fieldValue,
+    }));
   };
 
   const toggleSectionCollapse = (sectionId) => {
@@ -470,7 +478,12 @@ export default function FormBuilder() {
           </>
         ) : (
           <>
-            <FormPreview sections={sections} getColumnWidth={getColumnWidth} />
+            <FormPreview
+              sections={sections}
+              getColumnWidth={getColumnWidth}
+              fieldValues={fieldValues}
+              handleFieldInputChange={handleFieldInputChange}
+            />
           </>
         )}
       </div>
@@ -485,7 +498,11 @@ export default function FormBuilder() {
         />
       )}
       {showJson && (
-        <JsonModal sections={sections} onClose={() => setShowJson(false)} />
+        <JsonModal
+          sections={sections}
+          onClose={() => setShowJson(false)}
+          fieldValues={fieldValues}
+        />
       )}
     </div>
   );

@@ -1,6 +1,11 @@
 import React from "react";
 
-export default function FormPreview({ sections, getColumnWidth }) {
+export default function FormPreview({
+  sections,
+  getColumnWidth,
+  fieldValues,
+  handleFieldInputChange,
+}) {
   return (
     <div className="space-y-8">
       {sections.map((section) => (
@@ -21,7 +26,11 @@ export default function FormPreview({ sections, getColumnWidth }) {
                       <div className="space-y-4">
                         {col.fields.map((field) => (
                           <div key={field.id} className="mb-2">
-                            {renderField(field)}
+                            {renderField(
+                              field,
+                              fieldValues,
+                              handleFieldInputChange
+                            )}
                           </div>
                         ))}
                       </div>
@@ -36,7 +45,7 @@ export default function FormPreview({ sections, getColumnWidth }) {
   );
 }
 
-function renderField(field) {
+function renderField(field, fieldValues, handleFieldInputChange) {
   switch (field.type) {
     case "text":
       return (
@@ -49,6 +58,8 @@ function renderField(field) {
             type="text"
             placeholder={field.placeholder}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none transition-colors"
+            value={fieldValues[field.id] || ""}
+            onChange={(e) => handleFieldInputChange(field.id, e.target.value)}
           />
         </div>
       );
@@ -60,6 +71,10 @@ function renderField(field) {
               id={field.id}
               type="checkbox"
               className="size-4 text-blue-600 border-gray-300 rounded"
+              checked={fieldValues[field.id] || ""}
+              onChange={(e) =>
+                handleFieldInputChange(field.id, e.target.checked)
+              }
             />
           </div>
           <label
@@ -86,6 +101,8 @@ function renderField(field) {
             <input
               type="date"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none transition-colors"
+              value={fieldValues[field.id] || ""}
+              onChange={(e) => handleFieldInputChange(field.id, e.target.value)}
             />
             <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
               <svg
