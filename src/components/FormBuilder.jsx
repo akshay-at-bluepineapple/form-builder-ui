@@ -26,6 +26,7 @@ export default function FormBuilder() {
     const [previewMode, setPreviewMode] = useState(false);
     const [editingSectionId, setEditingSectionId] = useState(null);
     const [tempSectionName, setTempSectionName] = useState('');
+    const [fieldValues, setFieldValues] = useState({})
 
     const updateField = (updatedField) => {
         setSections(prev =>
@@ -167,6 +168,13 @@ export default function FormBuilder() {
         );
     };
 
+    const handleFieldInputChange = (fieldId, fieldValue) => {
+        setFieldValues(prev => ({
+            ...prev,
+            [fieldId]: fieldValue,
+        }));
+    }
+    
     return (
         <div className="flex h-screen">
             <Toolbox
@@ -322,10 +330,16 @@ export default function FormBuilder() {
                                                 {col.fields.map(field => (
                                                     <div key={field.id}>
                                                         <label className="block font-medium">{field.label}</label>
-                                                        {field.type === 'text' && <input placeholder={field.placeholder} className="border p-1 rounded w-full" />}
+                                                        {field.type === 'text' && <input placeholder={field.placeholder} className="border p-1 rounded w-full"
+                                                        value={fieldValues[field.id] || ''}
+                                                        onChange={(e) => handleFieldInputChange(field.id, e.target.value)} />}
                                                         {field.type === 'label' && <div>{field.label}</div>}
-                                                        {field.type === 'checkbox' && <input type="checkbox" />}
-                                                        {field.type === 'date' && <input type="date" className="border p-1 rounded" />}
+                                                        {field.type === 'checkbox' && <input type="checkbox" 
+                                                        checked={fieldValues[field.id] || ''}
+                                                        onChange={(e) => handleFieldInputChange(field.id, e.target.checked)}/>}
+                                                        {field.type === 'date' && <input type="date" className="border p-1 rounded" 
+                                                        value={fieldValues[field.id] || ''}
+                                                        onChange={(e) => handleFieldInputChange(field.id, e.target.value)}/>}
                                                     </div>
                                                 ))}
                                             </div>
@@ -350,7 +364,7 @@ export default function FormBuilder() {
             )}
 
             {showJson && (
-                <JsonModal sections={sections} onClose={() => setShowJson(false)} />
+                <JsonModal sections={sections} onClose={() => setShowJson(false)} fieldValues={fieldValues} />
             )}
         </div>
     );
