@@ -27,9 +27,10 @@ function FormListing() {
                             {
                                 row_name: "Basic Info",
                                 row_order: 1,
+                                id:1,
                                 columns: [
                                     {
-                                        column_name: "Full Name Column", // add if needed
+                                        column_name: "Full Name Column",
                                         column_order: 1,
                                         fields: [
                                             {
@@ -73,6 +74,7 @@ function FormListing() {
                             {
                                 row_name: "Email & Phone",
                                 row_order: 1,
+                                id:2,
                                 columns: [
                                     {
                                         column_name: "Email Column",

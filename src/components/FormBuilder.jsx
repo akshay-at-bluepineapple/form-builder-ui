@@ -267,7 +267,7 @@ export default function FormBuilder() {
                                             <DndContext onDragEnd={e => {
                                                 const { active, over } = e;
                                                 if (active && over && active.id !== over.id) {
-                                                    const fieldIds = col.fields.map(f => f.id);
+                                                    const fieldIds = col.fields.config.map(f => f.id);
                                                     const from = fieldIds.indexOf(active.id);
                                                     const to = fieldIds.indexOf(over.id);
                                                     if (from >= 0 && to >= 0) {
