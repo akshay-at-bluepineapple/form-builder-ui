@@ -6,24 +6,36 @@ import DroppableColumn from './DroppableColumn';
 import DraggableField from './DraggableField';
 import FieldEditorModal from './FieldEditorModal';
 import JsonModal from './JsonModal';
+import { useLocation } from 'react-router-dom';
 
 export default function FormBuilder() {
-    const [sections, setSections] = useState([
-        {
-            id: 'section-1',
-            name: 'Section 1',
-            collapsed: false,
-            rows: [{
-                id: 'row-1',
-                columns: [{ id: 'col-1', fields: [] }]
-            }]
-        },
-    ]);
-    const [activeSection, setActiveSection] = useState('section-1');
+    const location = useLocation();
+    const isPreview = location.state?.preview;
+    const formData = location.state?.form || {};
+    const [sections, setSections] = useState(formData.sections || []);
+
+    // const [sections, setSections] = useState([
+    //     {
+    //         id: 'section-1',
+    //         name: 'Section 1',
+    //         collapsed: false,
+    //         rows: [{
+    //             id: 'row-1',
+    //             columns: [{ id: 'col-1', fields: [] }]
+    //         }]
+    //     },
+    // ]);
+    // const [activeSection, setActiveSection] = useState('section-1');
+    const [activeSection, setActiveSection] = useState(() => {
+        return formData.sections && formData.sections.length > 0
+            ? formData.sections[0].id
+            : null;
+    });
+
     const [draggedToolboxField, setDraggedToolboxField] = useState(null);
     const [editingField, setEditingField] = useState(null);
     const [showJson, setShowJson] = useState(false);
-    const [previewMode, setPreviewMode] = useState(false);
+    const [previewMode, setPreviewMode] = useState(isPreview || false);
     const [editingSectionId, setEditingSectionId] = useState(null);
     const [tempSectionName, setTempSectionName] = useState('');
 
@@ -167,6 +179,12 @@ export default function FormBuilder() {
         );
     };
 
+    React.useEffect(() => {
+        if (sections.length > 0 && !sections.find(s => s.id === activeSection)) {
+            setActiveSection(sections[0].id);
+        }
+    }, [sections, activeSection]);
+
     return (
         <div className="flex h-screen">
             <Toolbox
@@ -197,14 +215,14 @@ export default function FormBuilder() {
                                     onClick={() => setActiveSection(section.id)}
                                     onDoubleClick={() => {
                                         setEditingSectionId(section.id);
-                                        setTempSectionName(section.name);
+                                        setTempSectionName(section.section_name);
                                     }}
                                     className={`px-4 py-2 rounded ${section.id === activeSection
                                         ? 'bg-blue-600 text-white'
                                         : 'bg-gray-200 text-gray-800'
                                         }`}
                                 >
-                                    {section.name}
+                                    {section.section_name}
                                 </button>
                             )}
                             <button
@@ -314,18 +332,18 @@ export default function FormBuilder() {
                     <div className="space-y-6">
                         {sections.map(section => (
                             <div key={section.id} className="bg-white p-4 rounded shadow border">
-                                <h2 className="font-bold mb-2">{section.name}</h2>
+                                <h2 className="font-bold mb-2">{section.section_name}</h2>
                                 {!section.collapsed && section.rows.map(row => (
                                     <div key={row.id} className="flex gap-4 mb-4">
                                         {row.columns.map(col => (
                                             <div key={col.id} className="w-1/3 space-y-3">
                                                 {col.fields.map(field => (
                                                     <div key={field.id}>
-                                                        <label className="block font-medium">{field.label}</label>
-                                                        {field.type === 'text' && <input placeholder={field.placeholder} className="border p-1 rounded w-full" />}
-                                                        {field.type === 'label' && <div>{field.label}</div>}
-                                                        {field.type === 'checkbox' && <input type="checkbox" />}
-                                                        {field.type === 'date' && <input type="date" className="border p-1 rounded" />}
+                                                        <label className="block font-medium">{field.config.label}</label>
+                                                        {field.config.field_type === 'text' && <input placeholder={field.config.placeholder} className="border p-1 rounded w-full" />}
+                                                        {field.config.field_type === 'label' && <div>{field.config.label}</div>}
+                                                        {field.config.field_type === 'checkbox' && <input type="checkbox" />}
+                                                        {field.config.field_type === 'date' && <input type="date" className="border p-1 rounded" />}
                                                     </div>
                                                 ))}
                                             </div>
