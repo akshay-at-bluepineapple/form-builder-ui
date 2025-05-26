@@ -35,6 +35,7 @@ export default function FormBuilder() {
   const [tempSectionName, setTempSectionName] = useState("");
   const [isMobileView, setIsMobileView] = useState(false);
   const [showToolbox, setShowToolbox] = useState(true);
+  const [fieldValues, setFieldValues] = useState({})
 
   useEffect(() => {
     const checkMobileView = () => {
@@ -79,25 +80,25 @@ export default function FormBuilder() {
         section.id !== activeSection
           ? section
           : {
-              ...section,
-              rows: section.rows.map((row) =>
-                row.id !== rowId
-                  ? row
-                  : {
-                      ...row,
-                      columns: row.columns.map((col) =>
-                        col.id === colId
-                          ? {
-                              ...col,
-                              fields: col.fields.filter(
-                                (f) => f.id !== fieldId
-                              ),
-                            }
-                          : col
-                      ),
-                    }
-              ),
-            }
+            ...section,
+            rows: section.rows.map((row) =>
+              row.id !== rowId
+                ? row
+                : {
+                  ...row,
+                  columns: row.columns.map((col) =>
+                    col.id === colId
+                      ? {
+                        ...col,
+                        fields: col.fields.filter(
+                          (f) => f.id !== fieldId
+                        ),
+                      }
+                      : col
+                  ),
+                }
+            ),
+          }
       )
     );
   };
@@ -108,29 +109,29 @@ export default function FormBuilder() {
         section.id !== activeSection
           ? section
           : {
-              ...section,
-              rows: section.rows.map((row) =>
-                row.id !== rowId
-                  ? row
-                  : {
-                      ...row,
-                      columns: row.columns.map((col) =>
-                        col.id === colId
-                          ? {
-                              ...col,
-                              fields: [
-                                ...col.fields,
-                                {
-                                  ...field,
-                                  id: `${field.type || field.id}-${Date.now()}`,
-                                },
-                              ],
-                            }
-                          : col
-                      ),
-                    }
-              ),
-            }
+            ...section,
+            rows: section.rows.map((row) =>
+              row.id !== rowId
+                ? row
+                : {
+                  ...row,
+                  columns: row.columns.map((col) =>
+                    col.id === colId
+                      ? {
+                        ...col,
+                        fields: [
+                          ...col.fields,
+                          {
+                            ...field,
+                            id: `${field.type || field.id}-${Date.now()}`,
+                          },
+                        ],
+                      }
+                      : col
+                  ),
+                }
+            ),
+          }
       )
     );
   };
@@ -174,15 +175,15 @@ export default function FormBuilder() {
         section.id !== activeSection
           ? section
           : {
-              ...section,
-              rows: [
-                ...section.rows,
-                {
-                  id: `row-${Date.now()}`,
-                  columns: [{ id: `col-${Date.now()}`, fields: [] }],
-                },
-              ],
-            }
+            ...section,
+            rows: [
+              ...section.rows,
+              {
+                id: `row-${Date.now()}`,
+                columns: [{ id: `col-${Date.now()}`, fields: [] }],
+              },
+            ],
+          }
       )
     );
   };
@@ -193,19 +194,19 @@ export default function FormBuilder() {
         section.id !== activeSection
           ? section
           : {
-              ...section,
-              rows: section.rows.map((row) =>
-                row.id !== rowId || row.columns.length >= 3
-                  ? row
-                  : {
-                      ...row,
-                      columns: [
-                        ...row.columns,
-                        { id: `col-${Date.now()}`, fields: [] },
-                      ],
-                    }
-              ),
-            }
+            ...section,
+            rows: section.rows.map((row) =>
+              row.id !== rowId || row.columns.length >= 3
+                ? row
+                : {
+                  ...row,
+                  columns: [
+                    ...row.columns,
+                    { id: `col-${Date.now()}`, fields: [] },
+                  ],
+                }
+            ),
+          }
       )
     );
   };
@@ -216,19 +217,26 @@ export default function FormBuilder() {
         section.id !== activeSection
           ? section
           : {
-              ...section,
-              rows: section.rows.map((row) =>
-                row.id !== rowId
-                  ? row
-                  : {
-                      ...row,
-                      columns: row.columns.filter((col) => col.id !== colId),
-                    }
-              ),
-            }
+            ...section,
+            rows: section.rows.map((row) =>
+              row.id !== rowId
+                ? row
+                : {
+                  ...row,
+                  columns: row.columns.filter((col) => col.id !== colId),
+                }
+            ),
+          }
       )
     );
   };
+
+  const handleFieldInputChange = (fieldId, fieldValue) => {
+    setFieldValues(prev => ({
+      ...prev,
+      [fieldId]: fieldValue,
+    }));
+  }
 
   const toggleSectionCollapse = (sectionId) => {
     setSections((prev) =>
@@ -269,11 +277,10 @@ export default function FormBuilder() {
       )}
       {(showToolbox || !isMobileView) && (
         <div
-          className={`${
-            isMobileView
-              ? "fixed inset-0 z-40 bg-white p-4 overflow-auto"
-              : "w-64"
-          }`}
+          className={`${isMobileView
+            ? "fixed inset-0 z-40 bg-white p-4 overflow-auto"
+            : "w-64"
+            }`}
         >
           <Toolbox
             onDragStart={setDraggedToolboxField}
@@ -285,9 +292,8 @@ export default function FormBuilder() {
         </div>
       )}
       <div
-        className={`flex-1 p-4 md:p-6 overflow-auto ${
-          isMobileView && showToolbox ? "hidden" : "block"
-        }`}
+        className={`flex-1 p-4 md:p-6 overflow-auto ${isMobileView && showToolbox ? "hidden" : "block"
+          }`}
       >
         <div className="flex flex-wrap gap-2 mb-4">
           <div className="flex pb-2 max-w-full">
@@ -316,11 +322,10 @@ export default function FormBuilder() {
                       setEditingSectionId(section.id);
                       setTempSectionName(section.name);
                     }}
-                    className={`px-3 py-1 rounded whitespace-nowrap ${
-                      section.id === activeSection
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-200 text-gray-800"
-                    }`}
+                    className={`px-3 py-1 rounded whitespace-nowrap ${section.id === activeSection
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-200 text-gray-800"
+                      }`}
                   >
                     {section.name}
                   </button>
@@ -387,28 +392,28 @@ export default function FormBuilder() {
                                       section.id !== activeSection
                                         ? section
                                         : {
-                                            ...section,
-                                            rows: section.rows.map((r) =>
-                                              r.id !== row.id
-                                                ? r
-                                                : {
-                                                    ...r,
-                                                    columns: r.columns.map(
-                                                      (c) =>
-                                                        c.id === col.id
-                                                          ? {
-                                                              ...c,
-                                                              fields: arrayMove(
-                                                                c.fields,
-                                                                from,
-                                                                to
-                                                              ),
-                                                            }
-                                                          : c
-                                                    ),
-                                                  }
-                                            ),
-                                          }
+                                          ...section,
+                                          rows: section.rows.map((r) =>
+                                            r.id !== row.id
+                                              ? r
+                                              : {
+                                                ...r,
+                                                columns: r.columns.map(
+                                                  (c) =>
+                                                    c.id === col.id
+                                                      ? {
+                                                        ...c,
+                                                        fields: arrayMove(
+                                                          c.fields,
+                                                          from,
+                                                          to
+                                                        ),
+                                                      }
+                                                      : c
+                                                ),
+                                              }
+                                          ),
+                                        }
                                     )
                                   );
                                 }
@@ -472,6 +477,8 @@ export default function FormBuilder() {
               sections={sections}
               getColumnWidth={getColumnWidth}
               isMobileView={isMobileView}
+              fieldValues={fieldValues}
+              handleFieldInputChange={handleFieldInputChange}
             />
           </>
         )}
@@ -489,7 +496,7 @@ export default function FormBuilder() {
       )}
 
       {showJson && (
-        <JsonModal sections={sections} onClose={() => setShowJson(false)} />
+        <JsonModal sections={sections} onClose={() => setShowJson(false)} fieldValues={fieldValues} />
       )}
     </div>
   );
