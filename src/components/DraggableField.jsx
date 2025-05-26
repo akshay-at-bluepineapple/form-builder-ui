@@ -22,20 +22,18 @@ export default function DraggableField({ field, onClick, onDelete }) {
     <div
       ref={setNodeRef}
       style={style}
-      className="relative p-3 bg-blue-50 border rounded mb-2 group cursor-pointer"
+      className="relative p-2 bg-white rounded-lg mb-2 cursor-pointer"
     >
       <button
         onClick={(e) => {
           e.stopPropagation();
           onDelete();
         }}
-        className="absolute top-1 right-1 text-xs text-red-500 hover:text-red-700 hidden group-hover:block"
+        className="absolute top-1 right-1 text-xs text-red-500 hover:text-red-700 group-hover:block"
       >
         ❌
       </button>
-
       <div onClick={onClick} className="pr-4">{field.label}</div>
-
       <div
         {...attributes}
         {...listeners}
