@@ -45,7 +45,7 @@ export default function FormPreview({
   );
 }
 
-function renderField(field) {
+function renderField(field, fieldValues, handleFieldInputChange) {
   switch (field.type) {
     case "text":
       return (
