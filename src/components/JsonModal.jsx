@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function JsonModal({ sections, onClose }) {
+export default function JsonModal({ sections, onClose, fieldValues }) {
   const structure = {
     submitApiRoute: "/api/form-submit",
     sections: sections.map((section) => ({
@@ -15,6 +15,7 @@ export default function JsonModal({ sections, onClose }) {
             label: field.label || "",
             placeholder: field.placeholder || "",
             required: field.required || false,
+            value: fieldValues[field.id] ?? '',
           })),
         })),
       })),
