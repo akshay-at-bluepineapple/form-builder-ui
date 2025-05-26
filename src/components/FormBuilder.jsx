@@ -298,7 +298,10 @@ export default function FormBuilder() {
         <div className="flex flex-wrap gap-2 mb-4">
           <div className="flex pb-2 max-w-full">
             {sections.map((section) => (
-              <div key={section.id} className="relative flex-shrink-0 space-x-8">
+              <div
+                key={section.id}
+                className="relative flex-shrink-0 space-x-8"
+              >
                 {editingSectionId === section.id ? (
                   <input
                     type="text"
@@ -354,7 +357,6 @@ export default function FormBuilder() {
             </button>
           </div>
         </div>
-
         {!previewMode ? (
           <>
             {sections
@@ -476,14 +478,12 @@ export default function FormBuilder() {
             <FormPreview
               sections={sections}
               getColumnWidth={getColumnWidth}
-              isMobileView={isMobileView}
               fieldValues={fieldValues}
               handleFieldInputChange={handleFieldInputChange}
             />
           </>
         )}
       </div>
-
       {editingField && (
         <FieldEditorModal
           field={editingField}
@@ -494,7 +494,6 @@ export default function FormBuilder() {
           }}
         />
       )}
-
       {showJson && (
         <JsonModal sections={sections} onClose={() => setShowJson(false)} fieldValues={fieldValues} />
       )}

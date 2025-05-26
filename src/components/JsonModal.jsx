@@ -1,19 +1,19 @@
-import React from 'react';
+import React from "react";
 
 export default function JsonModal({ sections, onClose, fieldValues }) {
   const structure = {
-    submitApiRoute: '/api/form-submit',
-    sections: sections.map(section => ({
+    submitApiRoute: "/api/form-submit",
+    sections: sections.map((section) => ({
       sectionName: section.name,
       collapsable: true,
-      rows: section.rows.map(row => ({
+      rows: section.rows.map((row) => ({
         rowId: row.id,
         rowName: row.id,
-        columns: row.columns.map(col => ({
-          fields: col.fields.map(field => ({
+        columns: row.columns.map((col) => ({
+          fields: col.fields.map((field) => ({
             type: field.type || field.id,
-            label: field.label || '',
-            placeholder: field.placeholder || '',
+            label: field.label || "",
+            placeholder: field.placeholder || "",
             required: field.required || false,
             value: fieldValues[field.id] ?? '',
           })),

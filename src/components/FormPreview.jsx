@@ -3,17 +3,13 @@ import React from "react";
 export default function FormPreview({
   sections,
   getColumnWidth,
-  isMobileView,
   fieldValues,
   handleFieldInputChange
 }) {
   return (
     <div className="space-y-8">
       {sections.map((section) => (
-        <div
-          key={section.id}
-          className="bg-white p-6 md:p-6 rounded-lg shadow-sm border"
-        >
+        <div key={section.id} className="bg-white p-6 md:p-6 rounded-lg shadow">
           <h2 className="text-xl font-semibold mb-4 md:mb-6 text-gray-800">
             {section.name}
           </h2>
@@ -52,6 +48,7 @@ function renderField(field, fieldValues, handleFieldInputChange) {
         <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">
             {field.label}
+            {field.required && <span className="text-red-500 ml-1">*</span>}
           </label>
           <input
             type="text"
@@ -61,10 +58,6 @@ function renderField(field, fieldValues, handleFieldInputChange) {
             onChange={(e) => handleFieldInputChange(field.id, e.target.value)}
           />
         </div>
-      );
-    case "label":
-      return (
-        <div className="py-2 px-1 text-gray-700 font-normal">{field.label}</div>
       );
     case "checkbox":
       return (
@@ -83,14 +76,20 @@ function renderField(field, fieldValues, handleFieldInputChange) {
             className="ml-2 block text-sm text-gray-700"
           >
             {field.label}
+            {field.required && <span className="text-red-500 ml-1">*</span>}
           </label>
         </div>
+      );
+    case "label":
+      return (
+        <div className="py-2 px-1 text-gray-700 font-normal">{field.label}</div>
       );
     case "date":
       return (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             {field.label}
+            {field.required && <span className="text-red-500 ml-1">*</span>}
           </label>
           <div className="relative">
             <input
