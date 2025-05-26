@@ -1,7 +1,14 @@
-import React from 'react';
-import { useDroppable } from '@dnd-kit/core';
+import React from "react";
+import { useDroppable } from "@dnd-kit/core";
 
-export default function DroppableColumn({ id, children, rowId, colId, onDropToolboxField, draggedToolboxField }) {
+export default function DroppableColumn({
+  id,
+  children,
+  rowId,
+  colId,
+  onDropToolboxField,
+  draggedToolboxField,
+}) {
   const { setNodeRef } = useDroppable({ id });
 
   return (

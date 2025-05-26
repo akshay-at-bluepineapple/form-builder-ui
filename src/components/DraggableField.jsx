@@ -1,6 +1,6 @@
-import React from 'react';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import React from "react";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 export default function DraggableField({ field, onClick, onDelete }) {
   const {
@@ -33,7 +33,9 @@ export default function DraggableField({ field, onClick, onDelete }) {
       >
         ❌
       </button>
-      <div onClick={onClick} className="pr-4">{field.label}</div>
+      <div onClick={onClick} className="pr-4">
+        {field.label}
+      </div>
       <div
         {...attributes}
         {...listeners}
