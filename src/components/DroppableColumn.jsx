@@ -13,7 +13,7 @@ export default function DroppableColumn({ id, children, rowId, colId, onDropTool
           onDropToolboxField(draggedToolboxField, rowId, colId);
         }
       }}
-      className="min-h-20 p-2 border rounded bg-white"
+      className="min-h-20 p-4 shadow rounded bg-gray-100"
     >
       {children}
     </div>
