@@ -26,6 +26,7 @@ export default function FormPreview({
                       <div className="space-y-4">
                         {col.fields.map((field) => (
                           <div key={field.id} className="mb-2">
+
                             {renderField(field, fieldValues, handleFieldInputChange)}
                           </div>
                         ))}
