@@ -1,131 +1,20 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function FormListing() {
     const navigate = useNavigate();
     const [forms, setForms] = React.useState([]);
 
-    const [users, setUsers] = React.useState([
-        { name: 'Insurance User Form' },
-        { name: 'Policy Holder Form' },
-        { name: 'Insurance Customer Form' },
-        { name: 'Policy Management Form' },
-        { name: 'Policy Update Form' },
-    ]);
-
-    React.useEffect(() => {
-        const sampleForms = [
-            {
-                form_name: "Insurance Customer Form",
-                submit_api_route: "/api/forms/insurance-customer/submit/",
-                sections: [
-                    {
-                        section_name: "Personal Details",
-                        is_collapsable: true,
-                        section_order: 1,
-                        rows: [
-                            {
-                                row_name: "Basic Info",
-                                row_order: 1,
-                                id:1,
-                                columns: [
-                                    {
-                                        column_name: "Full Name Column",
-                                        column_order: 1,
-                                        fields: [
-                                            {
-                                                config: {
-                                                    field_type: "text",
-                                                    label: "Full Name",
-                                                    placeholder: "Enter full name",
-                                                    required: true
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        column_name: "DOB Column",
-                                        column_order: 2,
-                                        fields: [
-                                            {
-                                                config: {
-                                                    field_type: "date",
-                                                    label: "Date of Birth",
-                                                    placeholder: "Select your date of birth",
-                                                    required: true
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        column_name: "Empty Column",
-                                        column_order: 3,
-                                        fields: []
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        section_name: "Contact Details",
-                        is_collapsable: false,
-                        section_order: 2,
-                        rows: [
-                            {
-                                row_name: "Email & Phone",
-                                row_order: 1,
-                                id:2,
-                                columns: [
-                                    {
-                                        column_name: "Email Column",
-                                        column_order: 1,
-                                        fields: [
-                                            {
-                                                config: {
-                                                    field_type: "email",
-                                                    label: "Email",
-                                                    placeholder: "Enter email"
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        column_name: "Phone Column",
-                                        column_order: 2,
-                                        fields: [
-                                            {
-                                                config: {
-                                                    field_type: "tel",
-                                                    label: "Phone",
-                                                    placeholder: "Enter phone number"
-                                                }
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        column_name: "Empty Column",
-                                        column_order: 3,
-                                        fields: []
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            },
-        ];
-
-        setForms(sampleForms);
+    useEffect(() => {
+        axios.get('http://localhost:8000/api/v1/form/')
+            .then(response => {
+                setForms(response.data);
+            })
+            .catch(error => {
+                console.error("Error fetching forms:", error);
+            });
     }, []);
-    // useEffect(() => {
-    //     axios.get('http://localhost:8000/forms/')
-    //         .then(response => {
-    //             setForms(response.data);
-    //         })
-    //         .catch(error => {
-    //             console.error("Error fetching forms:", error);
-    //         });
-    // }, []);
 
     return (
 
@@ -160,7 +49,7 @@ function FormListing() {
                                         View
                                     </button>
                                     <button type="button"
-                                        onClick={() => navigate(`/forms/${index}/edit`)}
+                                        onClick={() => navigate(`/forms/${index}/edit`, { state: { preview: false, form } })}
                                         className="text-sm bg-orange-300 hover:bg-orange-400 text-gray-800 py-1 px-3 rounded focus:outline-none focus:shadow-outline transition"
                                     >
                                         Edit</button></td>
