@@ -4,7 +4,7 @@ export default function FormPreview({
   sections,
   getColumnWidth,
   fieldValues,
-  handleFieldInputChange,
+  handleFieldInputChange
 }) {
   return (
     <div className="space-y-8">
@@ -26,11 +26,8 @@ export default function FormPreview({
                       <div className="space-y-4">
                         {col.fields.map((field) => (
                           <div key={field.id} className="mb-2">
-                            {renderField(
-                              field,
-                              fieldValues,
-                              handleFieldInputChange
-                            )}
+
+                            {renderField(field, fieldValues, handleFieldInputChange)}
                           </div>
                         ))}
                       </div>
@@ -58,7 +55,7 @@ function renderField(field, fieldValues, handleFieldInputChange) {
             type="text"
             placeholder={field.placeholder}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none transition-colors"
-            value={fieldValues[field.id] || ""}
+            value={fieldValues[field.id] || ''}
             onChange={(e) => handleFieldInputChange(field.id, e.target.value)}
           />
         </div>
@@ -71,10 +68,8 @@ function renderField(field, fieldValues, handleFieldInputChange) {
               id={field.id}
               type="checkbox"
               className="size-4 text-blue-600 border-gray-300 rounded"
-              checked={fieldValues[field.id] || ""}
-              onChange={(e) =>
-                handleFieldInputChange(field.id, e.target.checked)
-              }
+              checked={fieldValues[field.id] || ''}
+              onChange={(e) => handleFieldInputChange(field.id, e.target.checked)}
             />
           </div>
           <label
@@ -101,7 +96,7 @@ function renderField(field, fieldValues, handleFieldInputChange) {
             <input
               type="date"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none transition-colors"
-              value={fieldValues[field.id] || ""}
+              value={fieldValues[field.id] || ''}
               onChange={(e) => handleFieldInputChange(field.id, e.target.value)}
             />
             <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
