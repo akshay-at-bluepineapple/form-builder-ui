@@ -1,49 +1,49 @@
-import React, { useEffect, useState } from "react";
-import { DndContext, closestCenter } from "@dnd-kit/core";
+import React, { useEffect, useState } from 'react';
+import { DndContext, closestCenter } from '@dnd-kit/core';
 import {
   arrayMove,
   SortableContext,
   verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import Toolbox from "./Toolbox";
-import DroppableColumn from "./DroppableColumn";
-import DraggableField from "./DraggableField";
-import FieldEditorModal from "./FieldEditorModal";
-import JsonModal from "./JsonModal";
-import FormPreview from "./FormPreview";
+} from '@dnd-kit/sortable';
+import Toolbox from './Toolbox';
+import DroppableColumn from './DroppableColumn';
+import DraggableField from './DraggableField';
+import FieldEditorModal from './FieldEditorModal';
+import JsonModal from './JsonModal';
+import FormPreview from './FormPreview';
 
 export default function FormBuilder() {
   const [sections, setSections] = useState([
     {
-      id: "section-1",
-      name: "Section 1",
+      id: 'section-1',
+      name: 'Section 1',
       collapsed: false,
       rows: [
         {
-          id: "row-1",
-          columns: [{ id: "col-1", fields: [] }],
+          id: 'row-1',
+          columns: [{ id: 'col-1', fields: [] }],
         },
       ],
     },
   ]);
-  const [activeSection, setActiveSection] = useState("section-1");
+  const [activeSection, setActiveSection] = useState('section-1');
   const [draggedToolboxField, setDraggedToolboxField] = useState(null);
   const [editingField, setEditingField] = useState(null);
   const [showJson, setShowJson] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
   const [editingSectionId, setEditingSectionId] = useState(null);
-  const [tempSectionName, setTempSectionName] = useState("");
+  const [tempSectionName, setTempSectionName] = useState('');
   const [isMobileView, setIsMobileView] = useState(false);
   const [showToolbox, setShowToolbox] = useState(true);
-  const [fieldValues, setFieldValues] = useState({})
+  const [fieldValues, setFieldValues] = useState({});
 
   useEffect(() => {
     const checkMobileView = () => {
       setIsMobileView(window.innerWidth < 768);
     };
     checkMobileView();
-    window.addEventListener("resize", checkMobileView);
-    return () => window.removeEventListener("resize", checkMobileView);
+    window.addEventListener('resize', checkMobileView);
+    return () => window.removeEventListener('resize', checkMobileView);
   }, []);
 
   useEffect(() => {
@@ -80,25 +80,25 @@ export default function FormBuilder() {
         section.id !== activeSection
           ? section
           : {
-            ...section,
-            rows: section.rows.map((row) =>
-              row.id !== rowId
-                ? row
-                : {
-                  ...row,
-                  columns: row.columns.map((col) =>
-                    col.id === colId
-                      ? {
-                        ...col,
-                        fields: col.fields.filter(
-                          (f) => f.id !== fieldId
-                        ),
-                      }
-                      : col
-                  ),
-                }
-            ),
-          }
+              ...section,
+              rows: section.rows.map((row) =>
+                row.id !== rowId
+                  ? row
+                  : {
+                      ...row,
+                      columns: row.columns.map((col) =>
+                        col.id === colId
+                          ? {
+                              ...col,
+                              fields: col.fields.filter(
+                                (f) => f.id !== fieldId
+                              ),
+                            }
+                          : col
+                      ),
+                    }
+              ),
+            }
       )
     );
   };
@@ -109,29 +109,29 @@ export default function FormBuilder() {
         section.id !== activeSection
           ? section
           : {
-            ...section,
-            rows: section.rows.map((row) =>
-              row.id !== rowId
-                ? row
-                : {
-                  ...row,
-                  columns: row.columns.map((col) =>
-                    col.id === colId
-                      ? {
-                        ...col,
-                        fields: [
-                          ...col.fields,
-                          {
-                            ...field,
-                            id: `${field.type || field.id}-${Date.now()}`,
-                          },
-                        ],
-                      }
-                      : col
-                  ),
-                }
-            ),
-          }
+              ...section,
+              rows: section.rows.map((row) =>
+                row.id !== rowId
+                  ? row
+                  : {
+                      ...row,
+                      columns: row.columns.map((col) =>
+                        col.id === colId
+                          ? {
+                              ...col,
+                              fields: [
+                                ...col.fields,
+                                {
+                                  ...field,
+                                  id: `${field.type || field.id}-${Date.now()}`,
+                                },
+                              ],
+                            }
+                          : col
+                      ),
+                    }
+              ),
+            }
       )
     );
   };
@@ -166,7 +166,7 @@ export default function FormBuilder() {
 
   const cancelSectionEdit = () => {
     setEditingSectionId(null);
-    setTempSectionName("");
+    setTempSectionName('');
   };
 
   const addNewRow = () => {
@@ -175,15 +175,15 @@ export default function FormBuilder() {
         section.id !== activeSection
           ? section
           : {
-            ...section,
-            rows: [
-              ...section.rows,
-              {
-                id: `row-${Date.now()}`,
-                columns: [{ id: `col-${Date.now()}`, fields: [] }],
-              },
-            ],
-          }
+              ...section,
+              rows: [
+                ...section.rows,
+                {
+                  id: `row-${Date.now()}`,
+                  columns: [{ id: `col-${Date.now()}`, fields: [] }],
+                },
+              ],
+            }
       )
     );
   };
@@ -194,19 +194,19 @@ export default function FormBuilder() {
         section.id !== activeSection
           ? section
           : {
-            ...section,
-            rows: section.rows.map((row) =>
-              row.id !== rowId || row.columns.length >= 3
-                ? row
-                : {
-                  ...row,
-                  columns: [
-                    ...row.columns,
-                    { id: `col-${Date.now()}`, fields: [] },
-                  ],
-                }
-            ),
-          }
+              ...section,
+              rows: section.rows.map((row) =>
+                row.id !== rowId || row.columns.length >= 3
+                  ? row
+                  : {
+                      ...row,
+                      columns: [
+                        ...row.columns,
+                        { id: `col-${Date.now()}`, fields: [] },
+                      ],
+                    }
+              ),
+            }
       )
     );
   };
@@ -217,26 +217,26 @@ export default function FormBuilder() {
         section.id !== activeSection
           ? section
           : {
-            ...section,
-            rows: section.rows.map((row) =>
-              row.id !== rowId
-                ? row
-                : {
-                  ...row,
-                  columns: row.columns.filter((col) => col.id !== colId),
-                }
-            ),
-          }
+              ...section,
+              rows: section.rows.map((row) =>
+                row.id !== rowId
+                  ? row
+                  : {
+                      ...row,
+                      columns: row.columns.filter((col) => col.id !== colId),
+                    }
+              ),
+            }
       )
     );
   };
 
   const handleFieldInputChange = (fieldId, fieldValue) => {
-    setFieldValues(prev => ({
+    setFieldValues((prev) => ({
       ...prev,
       [fieldId]: fieldValue,
     }));
-  }
+  };
 
   const toggleSectionCollapse = (sectionId) => {
     setSections((prev) =>
@@ -250,18 +250,18 @@ export default function FormBuilder() {
 
   const getColumnWidth = (columnsCount) => {
     if (isMobileView) {
-      return "w-full";
+      return 'w-full';
     }
 
     switch (columnsCount) {
       case 1:
-        return "w-full";
+        return 'w-full';
       case 2:
-        return "sm:w-1/2 w-full";
+        return 'sm:w-1/2 w-full';
       case 3:
-        return "lg:w-1/3 md:w-1/2 w-full";
+        return 'lg:w-1/3 md:w-1/2 w-full';
       default:
-        return "w-full";
+        return 'w-full';
     }
   };
 
@@ -272,15 +272,16 @@ export default function FormBuilder() {
           onClick={() => setShowToolbox(!showToolbox)}
           className="fixed bottom-4 right-4 z-50 bg-blue-600 text-white p-3 rounded-full shadow-lg"
         >
-          {showToolbox ? "✕" : "🧰"}
+          {showToolbox ? '✕' : '🧰'}
         </button>
       )}
       {(showToolbox || !isMobileView) && (
         <div
-          className={`${isMobileView
-            ? "fixed inset-0 z-40 bg-white p-4 overflow-auto"
-            : "w-64"
-            }`}
+          className={`${
+            isMobileView
+              ? 'fixed inset-0 z-40 bg-white p-4 overflow-auto'
+              : 'w-64'
+          }`}
         >
           <Toolbox
             onDragStart={setDraggedToolboxField}
@@ -292,8 +293,9 @@ export default function FormBuilder() {
         </div>
       )}
       <div
-        className={`flex-1 p-4 md:p-6 overflow-auto ${isMobileView && showToolbox ? "hidden" : "block"
-          }`}
+        className={`flex-1 p-4 md:p-6 overflow-auto ${
+          isMobileView && showToolbox ? 'hidden' : 'block'
+        }`}
       >
         <div className="flex flex-wrap gap-2 mb-4">
           <div className="flex pb-2 max-w-full">
@@ -312,9 +314,9 @@ export default function FormBuilder() {
                       updateSectionName(section.id, tempSectionName)
                     }
                     onKeyDown={(e) => {
-                      if (e.key === "Enter")
+                      if (e.key === 'Enter')
                         updateSectionName(section.id, tempSectionName);
-                      if (e.key === "Escape") cancelSectionEdit();
+                      if (e.key === 'Escape') cancelSectionEdit();
                     }}
                     className="px-3 py-1 rounded border text-sm"
                   />
@@ -325,10 +327,11 @@ export default function FormBuilder() {
                       setEditingSectionId(section.id);
                       setTempSectionName(section.name);
                     }}
-                    className={`px-3 py-1 rounded whitespace-nowrap ${section.id === activeSection
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-200 text-gray-800"
-                      }`}
+                    className={`px-3 py-1 rounded whitespace-nowrap ${
+                      section.id === activeSection
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-200 text-gray-800'
+                    }`}
                   >
                     {section.name}
                   </button>
@@ -337,7 +340,7 @@ export default function FormBuilder() {
                   onClick={() => toggleSectionCollapse(section.id)}
                   className="absolute right-2 -top-2 text-sm text-gray-500 hover:text-black"
                 >
-                  {section.collapsed ? "➕" : "➖"}
+                  {section.collapsed ? '➕' : '➖'}
                 </button>
               </div>
             ))}
@@ -347,7 +350,7 @@ export default function FormBuilder() {
               onClick={() => setPreviewMode(!previewMode)}
               className="ml-auto bg-yellow-600 text-white px-2 h-10 rounded text-sm md:text-base"
             >
-              {previewMode ? "🛠 Back to Builder" : "👁 Preview"}
+              {previewMode ? '🛠 Back to Builder' : '👁 Preview'}
             </button>
             <button
               onClick={() => setShowJson(true)}
@@ -394,28 +397,28 @@ export default function FormBuilder() {
                                       section.id !== activeSection
                                         ? section
                                         : {
-                                          ...section,
-                                          rows: section.rows.map((r) =>
-                                            r.id !== row.id
-                                              ? r
-                                              : {
-                                                ...r,
-                                                columns: r.columns.map(
-                                                  (c) =>
-                                                    c.id === col.id
-                                                      ? {
-                                                        ...c,
-                                                        fields: arrayMove(
-                                                          c.fields,
-                                                          from,
-                                                          to
-                                                        ),
-                                                      }
-                                                      : c
-                                                ),
-                                              }
-                                          ),
-                                        }
+                                            ...section,
+                                            rows: section.rows.map((r) =>
+                                              r.id !== row.id
+                                                ? r
+                                                : {
+                                                    ...r,
+                                                    columns: r.columns.map(
+                                                      (c) =>
+                                                        c.id === col.id
+                                                          ? {
+                                                              ...c,
+                                                              fields: arrayMove(
+                                                                c.fields,
+                                                                from,
+                                                                to
+                                                              ),
+                                                            }
+                                                          : c
+                                                    ),
+                                                  }
+                                            ),
+                                          }
                                     )
                                   );
                                 }
@@ -495,7 +498,11 @@ export default function FormBuilder() {
         />
       )}
       {showJson && (
-        <JsonModal sections={sections} onClose={() => setShowJson(false)} fieldValues={fieldValues} />
+        <JsonModal
+          sections={sections}
+          onClose={() => setShowJson(false)}
+          fieldValues={fieldValues}
+        />
       )}
     </div>
   );
