@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 export default function FormPreview({
   sections,
@@ -11,9 +11,9 @@ export default function FormPreview({
       {sections.map((section) => (
         <div key={section.id} className="bg-white p-6 md:p-6 rounded-lg shadow">
           <h2 className="text-xl font-semibold mb-4 md:mb-6 text-gray-800">
-            {section.name}
+            {section.section_name}
           </h2>
-          {!section.collapsed &&
+          {!section.is_collapsable &&
             section.rows.map((row) => (
               <div
                 key={row.id}
@@ -24,15 +24,21 @@ export default function FormPreview({
                   return (
                     <div key={col.id} className={`${colWidth} mb-4 md:mb-0`}>
                       <div className="space-y-4">
-                        {col.fields.map((field) => (
-                          <div key={field.id} className="mb-2">
-                            {renderField(
-                              field,
-                              fieldValues,
-                              handleFieldInputChange
-                            )}
-                          </div>
-                        ))}
+                        {col.fields.map((field) => {
+                          const config = field?.config || field;
+                          const fieldType = config.field_type || config.type;
+                          return (
+                            <div key={field.id} className="mb-2">
+                              {renderField(
+                                field,
+                                config,
+                                fieldType,
+                                fieldValues,
+                                handleFieldInputChange
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   );
@@ -45,25 +51,31 @@ export default function FormPreview({
   );
 }
 
-function renderField(field, fieldValues, handleFieldInputChange) {
-  switch (field.type) {
-    case "text":
+function renderField(
+  field,
+  config,
+  fieldType,
+  fieldValues,
+  handleFieldInputChange
+) {
+  switch (fieldType) {
+    case 'text':
       return (
         <div className="relative">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            {field.label}
-            {field.required && <span className="text-red-500 ml-1">*</span>}
+            {config.label}
+            {config.required && <span className="text-red-500 ml-1">*</span>}
           </label>
           <input
             type="text"
-            placeholder={field.placeholder}
+            placeholder={config.placeholder}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none transition-colors"
-            value={fieldValues[field.id] || ""}
+            value={fieldValues[field.id] || ''}
             onChange={(e) => handleFieldInputChange(field.id, e.target.value)}
           />
         </div>
       );
-    case "checkbox":
+    case 'checkbox':
       return (
         <div className="flex items-center py-2">
           <div className="flex items-center h-5">
@@ -71,7 +83,7 @@ function renderField(field, fieldValues, handleFieldInputChange) {
               id={field.id}
               type="checkbox"
               className="size-4 text-blue-600 border-gray-300 rounded"
-              checked={fieldValues[field.id] || ""}
+              checked={fieldValues[field.id] || ''}
               onChange={(e) =>
                 handleFieldInputChange(field.id, e.target.checked)
               }
@@ -81,27 +93,29 @@ function renderField(field, fieldValues, handleFieldInputChange) {
             htmlFor={field.id}
             className="ml-2 block text-sm text-gray-700"
           >
-            {field.label}
-            {field.required && <span className="text-red-500 ml-1">*</span>}
+            {config.label}
+            {config.required && <span className="text-red-500 ml-1">*</span>}
           </label>
         </div>
       );
-    case "label":
+    case 'label':
       return (
-        <div className="py-2 px-1 text-gray-700 font-normal">{field.label}</div>
+        <div className="py-2 px-1 text-gray-700 font-normal">
+          {config.label}
+        </div>
       );
-    case "date":
+    case 'date':
       return (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            {field.label}
-            {field.required && <span className="text-red-500 ml-1">*</span>}
+            {config.label}
+            {config.required && <span className="text-red-500 ml-1">*</span>}
           </label>
           <div className="relative">
             <input
               type="date"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none transition-colors"
-              value={fieldValues[field.id] || ""}
+              value={fieldValues[field.id] || ''}
               onChange={(e) => handleFieldInputChange(field.id, e.target.value)}
             />
             <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
@@ -123,6 +137,6 @@ function renderField(field, fieldValues, handleFieldInputChange) {
         </div>
       );
     default:
-      return <div className="py-2">{field.label}</div>;
+      return <div className="py-2">{config.label}</div>;
   }
 }
