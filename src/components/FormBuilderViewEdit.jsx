@@ -140,8 +140,8 @@ export default function FormBuilderViewEdit() {
       ...sections,
       {
         id,
-        name: `Section ${sections.length + 1}`,
-        collapsed: false,
+        section_name: `Section ${sections.length + 1}`,
+        is_collapsable: false,
         rows: [
           {
             id: `row-${Date.now()}`,
@@ -151,6 +151,15 @@ export default function FormBuilderViewEdit() {
       },
     ]);
     setActiveSection(id);
+  };
+
+  const deleteSection = (sectionId) => {
+    setSections((prev) => prev.filter((section) => section.id !== sectionId));
+
+    if (activeSection === sectionId) {
+      const remaining = sections.filter((s) => s.id !== sectionId);
+      setActiveSection(remaining.length > 0 ? remaining[0].id : null);
+    }
   };
 
   const updateSectionName = (id, name) => {
@@ -302,11 +311,11 @@ export default function FormBuilderViewEdit() {
         }`}
       >
         <div className="flex flex-wrap gap-2 mb-4">
-          <div className="flex pb-2 max-w-full">
+          <div className="flex pb-2 max-w-full overflow-x-auto space-x-2">
             {sections.map((section) => (
               <div
                 key={section.id}
-                className="relative flex-shrink-0 space-x-8"
+                className="relative flex items-center space-x-1 bg-gray-100 rounded px-2 py-1 mr-2"
               >
                 {editingSectionId === section.id ? (
                   <input
@@ -341,8 +350,15 @@ export default function FormBuilderViewEdit() {
                   </button>
                 )}
                 <button
+                  onClick={() => deleteSection(section.id)}
+                  className="text-red-600 text-sm hover:text-red-700 mr-2 mt-4 text-xs"
+                  title="Delete section"
+                >
+                  ❌
+                </button>
+                <button
                   onClick={() => toggleSectionCollapse(section.id)}
-                  className="absolute right-2 -top-2 text-sm text-gray-500 hover:text-black"
+                  className="absolute right-[14px] -top-0 text-sm text-gray-500 hover:text-black"
                 >
                   {section.is_collapsable ? '➕' : '➖'}
                 </button>
