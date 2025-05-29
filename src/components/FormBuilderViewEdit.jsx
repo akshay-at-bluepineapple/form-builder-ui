@@ -255,6 +255,18 @@ export default function FormBuilderViewEdit() {
     );
   };
 
+  const handleCancelForm = () => {
+    console.log('Cancelled');
+  };
+
+  const handleSaveForm = () => {
+    const formData = {
+      sections,
+      fieldValues,
+    };
+    console.log('Form saved:', formData);
+  };
+
   const getColumnWidth = (columnsCount) => {
     if (isMobileView) {
       return 'w-full';
@@ -498,6 +510,20 @@ export default function FormBuilderViewEdit() {
             >
               + Add Row
             </button>
+            <div className="mt-6 flex justify-end gap-4">
+              <button
+                onClick={handleCancelForm}
+                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveForm}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                Save
+              </button>
+            </div>
           </>
         ) : (
           <>
