@@ -1,12 +1,13 @@
-import React from 'react'; 
-import FormBuilder from "./components/FormBuilder"
-function App() {
+import React from 'react';
+import { BrowserRouter as Router } from 'react-router-dom';
+import AppRoutes from './routes/AppRoutes';
 
+function App() {
   return (
-    <>
-      <FormBuilder />
-    </>
-  )
+    <Router>
+      <AppRoutes />
+    </Router>
+  );
 }
 
-export default App
+export default App;
