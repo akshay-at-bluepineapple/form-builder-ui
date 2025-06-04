@@ -1,38 +1,38 @@
-import React, { useEffect, useState } from "react";
-import { DndContext, closestCenter } from "@dnd-kit/core";
+import React, { useEffect, useState } from 'react';
+import { DndContext, closestCenter } from '@dnd-kit/core';
 import {
   arrayMove,
   SortableContext,
   verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import Toolbox from "./Toolbox";
-import DroppableColumn from "./DroppableColumn";
-import DraggableField from "./DraggableField";
-import FieldEditorModal from "./FieldEditorModal";
-import JsonModal from "./JsonModal";
-import FormPreview from "./FormPreview";
+} from '@dnd-kit/sortable';
+import Toolbox from './Toolbox';
+import DroppableColumn from './DroppableColumn';
+import DraggableField from './DraggableField';
+import FieldEditorModal from './FieldEditorModal';
+import JsonModal from './JsonModal';
+import FormPreview from './FormPreview';
 
 export default function FormBuilder() {
   const [sections, setSections] = useState([
     {
-      id: "section-1",
-      name: "Section 1",
+      id: 'section-1',
+      name: 'Section 1',
       collapsed: false,
       rows: [
         {
-          id: "row-1",
-          columns: [{ id: "col-1", fields: [] }],
+          id: 'row-1',
+          columns: [{ id: 'col-1', fields: [] }],
         },
       ],
     },
   ]);
-  const [activeSection, setActiveSection] = useState("section-1");
+  const [activeSection, setActiveSection] = useState('section-1');
   const [draggedToolboxField, setDraggedToolboxField] = useState(null);
   const [editingField, setEditingField] = useState(null);
   const [showJson, setShowJson] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
   const [editingSectionId, setEditingSectionId] = useState(null);
-  const [tempSectionName, setTempSectionName] = useState("");
+  const [tempSectionName, setTempSectionName] = useState('');
   const [isMobileView, setIsMobileView] = useState(false);
   const [showToolbox, setShowToolbox] = useState(true);
   const [fieldValues, setFieldValues] = useState({});
@@ -42,8 +42,8 @@ export default function FormBuilder() {
       setIsMobileView(window.innerWidth < 768);
     };
     checkMobileView();
-    window.addEventListener("resize", checkMobileView);
-    return () => window.removeEventListener("resize", checkMobileView);
+    window.addEventListener('resize', checkMobileView);
+    return () => window.removeEventListener('resize', checkMobileView);
   }, []);
 
   useEffect(() => {
@@ -166,7 +166,7 @@ export default function FormBuilder() {
 
   const cancelSectionEdit = () => {
     setEditingSectionId(null);
-    setTempSectionName("");
+    setTempSectionName('');
   };
 
   const addNewRow = () => {
@@ -250,18 +250,18 @@ export default function FormBuilder() {
 
   const getColumnWidth = (columnsCount) => {
     if (isMobileView) {
-      return "w-full";
+      return 'w-full';
     }
 
     switch (columnsCount) {
       case 1:
-        return "w-full";
+        return 'w-full';
       case 2:
-        return "sm:w-1/2 w-full";
+        return 'sm:w-1/2 w-full';
       case 3:
-        return "lg:w-1/3 md:w-1/2 w-full";
+        return 'lg:w-1/3 md:w-1/2 w-full';
       default:
-        return "w-full";
+        return 'w-full';
     }
   };
 
@@ -272,15 +272,15 @@ export default function FormBuilder() {
           onClick={() => setShowToolbox(!showToolbox)}
           className="fixed bottom-4 right-4 z-50 bg-blue-600 text-white p-3 rounded-full shadow-lg"
         >
-          {showToolbox ? "✕" : "🧰"}
+          {showToolbox ? '✕' : '🧰'}
         </button>
       )}
       {(showToolbox || !isMobileView) && (
         <div
           className={`${
             isMobileView
-              ? "fixed inset-0 z-40 bg-white p-4 overflow-auto"
-              : "w-64"
+              ? 'fixed inset-0 z-40 bg-white p-4 overflow-auto'
+              : 'w-64'
           }`}
         >
           <Toolbox
@@ -294,7 +294,7 @@ export default function FormBuilder() {
       )}
       <div
         className={`flex-1 p-4 md:p-6 overflow-auto ${
-          isMobileView && showToolbox ? "hidden" : "block"
+          isMobileView && showToolbox ? 'hidden' : 'block'
         }`}
       >
         <div className="flex flex-wrap gap-2 mb-4">
@@ -314,9 +314,9 @@ export default function FormBuilder() {
                       updateSectionName(section.id, tempSectionName)
                     }
                     onKeyDown={(e) => {
-                      if (e.key === "Enter")
+                      if (e.key === 'Enter')
                         updateSectionName(section.id, tempSectionName);
-                      if (e.key === "Escape") cancelSectionEdit();
+                      if (e.key === 'Escape') cancelSectionEdit();
                     }}
                     className="px-3 py-1 rounded border text-sm"
                   />
@@ -329,8 +329,8 @@ export default function FormBuilder() {
                     }}
                     className={`px-3 py-1 rounded whitespace-nowrap ${
                       section.id === activeSection
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-200 text-gray-800"
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-200 text-gray-800'
                     }`}
                   >
                     {section.name}
@@ -340,7 +340,7 @@ export default function FormBuilder() {
                   onClick={() => toggleSectionCollapse(section.id)}
                   className="absolute right-2 -top-2 text-sm text-gray-500 hover:text-black"
                 >
-                  {section.collapsed ? "➕" : "➖"}
+                  {section.collapsed ? '➕' : '➖'}
                 </button>
               </div>
             ))}
@@ -350,7 +350,7 @@ export default function FormBuilder() {
               onClick={() => setPreviewMode(!previewMode)}
               className="ml-auto bg-yellow-600 text-white px-2 h-10 rounded text-sm md:text-base"
             >
-              {previewMode ? "🛠 Back to Builder" : "👁 Preview"}
+              {previewMode ? '🛠 Back to Builder' : '👁 Preview'}
             </button>
             <button
               onClick={() => setShowJson(true)}
