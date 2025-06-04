@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFetch } from '../hooks/useFetch';
 import Skeleton from './Skeleton';
+import { useDelete } from '../hooks/useDelete';
 
 function FormListing() {
   const navigate = useNavigate();
@@ -11,30 +12,23 @@ function FormListing() {
     error,
     setData,
   } = useFetch('http://localhost:8000/api/v1/form/');
-
+  const { deleteRequest } = useDelete();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedForm, setSelectedForm] = useState(null);
 
   const handleDelete = async () => {
-    try {
-      const formId = selectedForm?.id;
-      const response = await fetch(
-        `http://localhost:8000/api/v1/form/soft-delete/${formId}/`,
-        {
-          method: 'DELETE',
-        }
+    const formId = selectedForm?.id;
+    const { success, error } = await deleteRequest(
+      `http://localhost:8000/api/v1/form/soft-delete/${formId}/`
+    );
+    if (success) {
+      setData((prevForms) =>
+        prevForms.filter((form) => form.formId !== selectedForm.formId)
       );
-      if (response.ok) {
-        setData((prevForms) =>
-          prevForms.filter((form) => form.formId !== selectedForm.formId)
-        );
-        setShowDeleteModal(false);
-        setSelectedForm(null);
-      } else {
-        const err = await response.json();
-      }
-    } catch (err) {
-      console.error(err);
+      setShowDeleteModal(false);
+      setSelectedForm(null);
+    } else {
+      console.error(error);
     }
   };
 

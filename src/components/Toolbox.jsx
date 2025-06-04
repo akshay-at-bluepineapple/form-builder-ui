@@ -1,9 +1,14 @@
-import React from "react";
+import React from 'react';
 
 const TOOLBOX_FIELDS = [
-  { id: "text", label: "Text Input", type: "text", required: false },
-  { id: "checkbox", label: "Checkbox", type: "checkbox", required: false },
-  { id: "date", label: "Date Picker", type: "date", required: false },
+  { id: 'text', label: 'Text Input', field_type: 'text', required: false },
+  {
+    id: 'checkbox',
+    label: 'Checkbox',
+    field_type: 'checkbox',
+    required: false,
+  },
+  { id: 'date', label: 'Date Picker', field_type: 'date', required: false },
 ];
 
 export default function Toolbox({

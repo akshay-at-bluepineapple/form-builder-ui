@@ -12,6 +12,8 @@ import FieldEditorModal from './FieldEditorModal';
 import JsonModal from './JsonModal';
 import { useLocation } from 'react-router-dom';
 import FormPreview from './FormPreview';
+import { usePut } from '../hooks/usePut';
+import { usePost } from '../hooks/usePost';
 
 export default function FormBuilderViewEdit() {
   const location = useLocation();
@@ -35,6 +37,21 @@ export default function FormBuilderViewEdit() {
   const [showToolbox, setShowToolbox] = useState(true);
   const [fieldValues, setFieldValues] = useState({});
 
+  const [formMetadata, setFormMetadata] = useState({
+    form_name: formData.form_name || 'Untitled Form',
+    table_name: formData.table_name || '',
+    submit_api_route: formData.submit_api_route || '',
+  });
+
+  const { put, loading, error } = usePut(
+    `http://localhost:8000/api/v1/form/create-update/${formData?.id}/`
+  );
+  const {
+    post,
+    loading: postLoading,
+    error: postError,
+  } = usePost(`http://localhost:8000/api/v1/form/create`);
+
   useEffect(() => {
     const checkMobileView = () => {
       setIsMobileView(window.innerWidth < 768);
@@ -52,6 +69,41 @@ export default function FormBuilderViewEdit() {
     }
   }, [isMobileView]);
 
+  const getDataTypeFromFieldType = (fieldType) => {
+    const typeMap = {
+      text: 'varchar(255)',
+      email: 'varchar(255)',
+      password: 'varchar(255)',
+      textarea: 'text',
+      number: 'int',
+      date: 'date',
+      datetime: 'datetime',
+      time: 'time',
+      checkbox: 'boolean',
+      radio: 'varchar(100)',
+      select: 'varchar(255)',
+      file: 'varchar(500)',
+      phone: 'varchar(20)',
+      url: 'varchar(500)',
+    };
+    return typeMap[fieldType] || 'varchar(255)';
+  };
+
+  const getMaxLengthFromFieldType = (fieldType) => {
+    const lengthMap = {
+      text: 255,
+      email: 255,
+      password: 255,
+      textarea: 1000,
+      phone: 20,
+      url: 500,
+      select: 255,
+      radio: 100,
+      file: 500,
+    };
+    return lengthMap[fieldType] || 255;
+  };
+
   const updateField = (updatedField) => {
     setSections((prev) =>
       prev.map((section) => {
@@ -62,9 +114,30 @@ export default function FormBuilderViewEdit() {
             ...row,
             columns: row.columns.map((col) => ({
               ...col,
-              fields: col.fields.map((f) =>
-                f.id === updatedField.id ? updatedField : f
-              ),
+              fields: col.fields.map((f) => {
+                if (f.id === updatedField.id) {
+                  const updatedFieldData = {
+                    ...f,
+                    config: {
+                      ...f.config,
+                      ...updatedField.config,
+                    },
+                    label: updatedField.config?.label || f.label,
+                    placeholder:
+                      updatedField.config?.placeholder || f.placeholder,
+                    required:
+                      updatedField.config?.required !== undefined
+                        ? updatedField.config.required
+                        : f.required,
+                  };
+                  if (f.column !== undefined) {
+                    updatedFieldData.column = f.column;
+                  }
+
+                  return updatedFieldData;
+                }
+                return f;
+              }),
             })),
           })),
         };
@@ -102,6 +175,42 @@ export default function FormBuilderViewEdit() {
   };
 
   const addFieldToColumn = (field, rowId, colId) => {
+    const dbColumnName =
+      field.db_column_name ||
+      `${field.field_type || field.type || 'field'}_${Date.now()}`;
+
+    const targetSection = sections.find(
+      (section) => section.id === activeSection
+    );
+    const targetRow = targetSection?.rows.find((row) => row.id === rowId);
+    const targetColumn = targetRow?.columns.find((col) => col.id === colId);
+
+    const isExistingColumn =
+      targetColumn && typeof targetColumn.id === 'number';
+
+    const newField = {
+      id: `${field.field_type || field.type || 'field'}-${Date.now()}`,
+      db_column_name: dbColumnName,
+      config: {
+        field_type: field.field_type || field.type,
+        label: field.label || `${field.field_type || field.type} Label`,
+        placeholder:
+          field.placeholder || `Enter ${field.field_type || field.type}`,
+        required: field.required || false,
+        ...(field.options && { options: field.options }),
+      },
+      data_type:
+        field.data_type ||
+        getDataTypeFromFieldType(field.field_type || field.type),
+      max_length:
+        field.max_length ||
+        getMaxLengthFromFieldType(field.field_type || field.type),
+    };
+
+    if (isExistingColumn) {
+      newField.column = targetColumn.id;
+    }
+
     setSections((prev) =>
       prev.map((section) =>
         section.id !== activeSection
@@ -117,13 +226,7 @@ export default function FormBuilderViewEdit() {
                         col.id === colId
                           ? {
                               ...col,
-                              fields: [
-                                ...col.fields,
-                                {
-                                  ...field,
-                                  id: `${field.field_type || field.id}-${Date.now()}`,
-                                },
-                              ],
+                              fields: [...col.fields, newField],
                             }
                           : col
                       ),
@@ -259,12 +362,124 @@ export default function FormBuilderViewEdit() {
     console.log('Cancelled');
   };
 
-  const handleSaveForm = () => {
-    const formData = {
-      sections,
-      fieldValues,
+  const handleSaveForm = async () => {
+    const formIdFromInitialData = formData?.id;
+    const isEditMode = !!formIdFromInitialData;
+
+    let processedSections;
+
+    if (isEditMode) {
+      processedSections = sections.map((section, sectionIndex) => {
+        const sectionPayload = {
+          section_name: section.section_name,
+          is_collapsable: section.is_collapsable,
+          section_order: sectionIndex + 1,
+        };
+        if (typeof section.id === 'number') {
+          sectionPayload.id = section.id;
+        }
+
+        sectionPayload.rows = section.rows.map((row, rowIndex) => {
+          const rowPayload = {
+            row_name: row.row_name || `Row ${rowIndex + 1}`,
+            row_order: rowIndex + 1,
+          };
+          if (typeof row.id === 'number') {
+            rowPayload.id = row.id;
+          }
+
+          rowPayload.columns = row.columns.map((column, colIndex) => {
+            const columnPayload = {
+              column_name: column.column_name || `Column ${colIndex + 1}`,
+              column_order: colIndex + 1,
+            };
+            if (typeof column.id === 'number') {
+              columnPayload.id = column.id;
+            }
+
+            columnPayload.fields = column.fields.map((field) => {
+              const fieldPayload = {
+                db_column_name: field.db_column_name,
+                config: field.config,
+                data_type: field.data_type,
+                max_length: field.max_length,
+              };
+              if (typeof field.id === 'number') {
+                fieldPayload.id = field.id;
+              }
+              return fieldPayload;
+            });
+            return columnPayload;
+          });
+          return rowPayload;
+        });
+        return sectionPayload;
+      });
+    } else {
+      processedSections = sections.map((section, sectionIndex) => ({
+        section_name: section.section_name,
+        is_collapsable: section.is_collapsable,
+        section_order: sectionIndex + 1,
+        rows: section.rows.map((row, rowIndex) => ({
+          row_name: row.row_name || `Row ${rowIndex + 1}`,
+          row_order: rowIndex + 1,
+          columns: row.columns.map((column, colIndex) => ({
+            column_name: column.column_name || `Column ${colIndex + 1}`,
+            column_order: colIndex + 1,
+            fields: column.fields.map((field) => ({
+              db_column_name: field.db_column_name,
+              config: field.config,
+              data_type: field.data_type,
+              max_length: field.max_length,
+            })),
+          })),
+        })),
+      }));
+    }
+
+    const formDataToSave = {
+      form_name: formMetadata.form_name,
+      table_name: formMetadata.table_name,
+      submit_api_route: formMetadata.submit_api_route,
+      sections: processedSections,
     };
-    console.log('Form saved:', formData);
+
+    try {
+      console.log(
+        `Saving form (isEditMode: ${isEditMode}, formId: ${formIdFromInitialData}):`,
+        JSON.stringify(formDataToSave, null, 2)
+      );
+
+      if (isEditMode) {
+        result = await put(formDataToSave);
+      } else {
+        result = await post(formDataToSave);
+      }
+
+      const response = await fetch(apiUrl, {
+        method: httpMethod,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formDataToSave),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error saving form:', response.status, errorText);
+        return;
+      }
+
+      const result = await response.json();
+
+      if (!isEditMode && result.id) {
+        setInitialFormData(result);
+        setSections(result.sections || []);
+      } else if (isEditMode) {
+        setInitialFormData(result);
+        setSections(result.sections || []);
+      }
+    } catch (error) {
+      console.error('Error saving form:', error);
+    }
   };
 
   const getColumnWidth = (columnsCount) => {
@@ -363,7 +578,7 @@ export default function FormBuilderViewEdit() {
                 )}
                 <button
                   onClick={() => deleteSection(section.id)}
-                  className="text-red-600 text-sm hover:text-red-700 mr-2 mt-4 text-xs"
+                  className="text-red-600 text-sm hover:text-red-700 mr-2 mt-4"
                   title="Delete section"
                 >
                   ❌
