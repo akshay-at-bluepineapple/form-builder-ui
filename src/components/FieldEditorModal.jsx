@@ -1,7 +1,28 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
 export default function FieldEditorModal({ field, onClose, onSave }) {
-  const [localField, setLocalField] = useState({ ...field });
+  const [localField, setLocalField] = useState({
+    id: field.id,
+    label: field.label || field.config?.label || '',
+    placeholder: field.placeholder || field.config?.placeholder || '',
+    required: field.required || field.config?.required || false,
+    field_type: field.field_type || field.config?.field_type || field.type,
+    ...field,
+  });
+
+  const handleSave = () => {
+    const updatedField = {
+      ...field,
+      config: {
+        ...field.config,
+        label: localField.label,
+        placeholder: localField.placeholder,
+        required: localField.required,
+        field_type: field.config?.field_type || field.field_type || field.type,
+      },
+    };
+    onSave(updatedField);
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
@@ -18,7 +39,7 @@ export default function FieldEditorModal({ field, onClose, onSave }) {
         <label className="block mb-2 text-sm font-medium">Placeholder</label>
         <input
           className="w-full border p-2 rounded mb-4"
-          value={localField.placeholder || ""}
+          value={localField.placeholder || ''}
           onChange={(e) =>
             setLocalField({ ...localField, placeholder: e.target.value })
           }
@@ -38,7 +59,7 @@ export default function FieldEditorModal({ field, onClose, onSave }) {
           </button>
           <button
             className="px-4 py-2 bg-blue-600 text-white rounded"
-            onClick={() => onSave(localField)}
+            onClick={handleSave}
           >
             Save
           </button>
