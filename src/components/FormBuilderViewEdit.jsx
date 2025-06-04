@@ -36,22 +36,17 @@ export default function FormBuilderViewEdit() {
   const [isMobileView, setIsMobileView] = useState(false);
   const [showToolbox, setShowToolbox] = useState(true);
   const [fieldValues, setFieldValues] = useState({});
-  const [formName, setFormName] = useState(formData.form_name || '');
 
   const [formMetadata, setFormMetadata] = useState({
-    form_name: formData.form_name || 'Untitled Form',
-    table_name: formData.table_name || '',
-    submit_api_route: formData.submit_api_route || '',
+    form_name: formData.form_name || '',
+    table_name: formData.table_name || 'product',
+    submit_api_route: formData.submit_api_route || 'https://submit.com/form/',
   });
 
-  const { put, loading, error } = usePut(
+  const { put } = usePut(
     `http://localhost:8000/api/v1/form/create-update/${formData?.id}/`
   );
-  const {
-    post,
-    loading: postLoading,
-    error: postError,
-  } = usePost(`http://localhost:8000/api/v1/form/create`);
+  const { post } = usePost(`http://localhost:8000/api/v1/form/create/`);
 
   useEffect(() => {
     const checkMobileView = () => {
@@ -359,9 +354,7 @@ export default function FormBuilderViewEdit() {
     );
   };
 
-  const handleCancelForm = () => {
-    console.log('Cancelled');
-  };
+  const handleCancelForm = () => {};
 
   const handleSaveForm = async () => {
     const formIdFromInitialData = formData?.id;
@@ -446,37 +439,11 @@ export default function FormBuilderViewEdit() {
     };
 
     try {
-      console.log(
-        `Saving form (isEditMode: ${isEditMode}, formId: ${formIdFromInitialData}):`,
-        JSON.stringify(formDataToSave, null, 2)
-      );
-
+      let result;
       if (isEditMode) {
         result = await put(formDataToSave);
       } else {
         result = await post(formDataToSave);
-      }
-
-      const response = await fetch(apiUrl, {
-        method: httpMethod,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formDataToSave),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error saving form:', response.status, errorText);
-        return;
-      }
-
-      const result = await response.json();
-
-      if (!isEditMode && result.id) {
-        setInitialFormData(result);
-        setSections(result.sections || []);
-      } else if (isEditMode) {
-        setInitialFormData(result);
-        setSections(result.sections || []);
       }
     } catch (error) {
       console.error('Error saving form:', error);
@@ -542,14 +509,25 @@ export default function FormBuilderViewEdit() {
           <label htmlFor="form-name" className="text-sm font-semibold">
             Form Name:
           </label>
-          <input
-            id="form-name"
-            type="text"
-            value={formName}
-            onChange={(e) => setFormName(e.target.value)}
-            placeholder="Enter form name"
-            className="border px-3 py-1 rounded w-full md:w-1/3 text-sm"
-          />
+          {!isPreview ? (
+            <input
+              id="form-name"
+              type="text"
+              value={formMetadata.form_name}
+              onChange={(e) =>
+                setFormMetadata((prev) => ({
+                  ...prev,
+                  form_name: e.target.value,
+                }))
+              }
+              placeholder="Enter form name"
+              className="border px-3 py-1 rounded w-full md:w-1/3 text-sm"
+            />
+          ) : (
+            <span className="px-3 py-1 bg-gray-100 rounded w-full md:w-1/3 text-sm text-gray-700">
+              {formMetadata.form_name}
+            </span>
+          )}
         </div>
 
         <div className="flex flex-wrap gap-2 mb-4">

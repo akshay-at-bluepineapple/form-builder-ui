@@ -16,7 +16,6 @@ export const usePut = (url) => {
         body: JSON.stringify(data),
       });
 
-      console.log(response, 'response for put');
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'PUT request failed');
