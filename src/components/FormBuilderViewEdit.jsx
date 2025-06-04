@@ -36,6 +36,7 @@ export default function FormBuilderViewEdit() {
   const [isMobileView, setIsMobileView] = useState(false);
   const [showToolbox, setShowToolbox] = useState(true);
   const [fieldValues, setFieldValues] = useState({});
+  const [formName, setFormName] = useState(formData.form_name || '');
 
   const [formMetadata, setFormMetadata] = useState({
     form_name: formData.form_name || 'Untitled Form',
@@ -537,6 +538,20 @@ export default function FormBuilderViewEdit() {
           isMobileView && showToolbox ? 'hidden' : 'block'
         }`}
       >
+        <div className="mb-4 flex items-center gap-2">
+          <label htmlFor="form-name" className="text-sm font-semibold">
+            Form Name:
+          </label>
+          <input
+            id="form-name"
+            type="text"
+            value={formName}
+            onChange={(e) => setFormName(e.target.value)}
+            placeholder="Enter form name"
+            className="border px-3 py-1 rounded w-full md:w-1/3 text-sm"
+          />
+        </div>
+
         <div className="flex flex-wrap gap-2 mb-4">
           <div className="flex pb-2 max-w-full overflow-x-auto space-x-2">
             {sections.map((section) => (
