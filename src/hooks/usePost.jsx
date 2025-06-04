@@ -7,20 +7,27 @@ export function usePost(url) {
   const post = async (data) => {
     setLoading(true);
     setError(null);
+    console.log(url, data, 'post data and url');
     try {
-      const res = await fetch(url, {
+      const response = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      const result = await res.json();
-      setLoading(false);
+      console.log(response, 'post response');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'POST request failed');
+      }
+      const result = await response.json();
       return result;
     } catch (err) {
-      setError(err.message);
-      setLoading(false);
+      setError(err);
       throw err;
+    } finally {
+      setLoading(false);
     }
   };
 
