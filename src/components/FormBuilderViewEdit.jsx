@@ -39,8 +39,8 @@ export default function FormBuilderViewEdit() {
 
   const [formMetadata, setFormMetadata] = useState({
     form_name: formData.form_name || '',
-    table_name: formData.table_name || '',
-    submit_api_route: formData.submit_api_route || '',
+    table_name: formData.table_name || 'product',
+    submit_api_route: formData.submit_api_route || 'https://submit.com/form/',
   });
 
   const { put } = usePut(
@@ -354,9 +354,7 @@ export default function FormBuilderViewEdit() {
     );
   };
 
-  const handleCancelForm = () => {
-    console.log('Cancelled');
-  };
+  const handleCancelForm = () => {};
 
   const handleSaveForm = async () => {
     const formIdFromInitialData = formData?.id;
@@ -441,16 +439,11 @@ export default function FormBuilderViewEdit() {
     };
 
     try {
-      console.log(
-        `Saving form (isEditMode: ${isEditMode}, formId: ${formIdFromInitialData}):`,
-        JSON.stringify(formDataToSave, null, 2)
-      );
       let result;
       if (isEditMode) {
         result = await put(formDataToSave);
       } else {
         result = await post(formDataToSave);
-        console.log(result, 'post result');
       }
     } catch (error) {
       console.error('Error saving form:', error);
