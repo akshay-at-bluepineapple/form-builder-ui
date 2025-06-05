@@ -97,26 +97,24 @@ export default function FormBuilderViewEdit() {
 
   // Function to convert database field type to form field type
   const convertDbTypeToFieldType = (dbType) => {
-    console.log(dbType, 'dbType');
     const type = dbType.toLowerCase();
-
-    if (type.includes('varchar') || type.includes('char')) return 'text';
-    if (type.includes('text') || type.includes('longtext')) return 'textarea';
-    if (type.includes('int') || type.includes('bigint')) return 'number';
+    if (type.includes('tinyint') || type.includes('boolean')) return 'checkbox';
     if (
       type.includes('decimal') ||
       type.includes('float') ||
       type.includes('double')
     )
       return 'number';
+    if (type.includes('varchar') || type.includes('char')) return 'text';
+    if (type.includes('text') || type.includes('longtext')) return 'textarea';
+    if (type.includes('int') || type.includes('bigint')) return 'number';
+
     if (type.includes('date') && !type.includes('time')) return 'date';
     if (type.includes('datetime') || type.includes('timestamp'))
       return 'datetime';
     if (type.includes('time')) return 'time';
-    if (type.includes('tinyint')) return 'checkbox';
     if (type.includes('email')) return 'email';
-
-    return 'text'; // Default fallback
+    return 'text';
   };
 
   const convertedTableFields = useMemo(() => {
@@ -647,9 +645,7 @@ export default function FormBuilderViewEdit() {
             onAddSection={addNewSection}
             isMobileView={isMobileView}
             onClose={isMobileView ? () => setShowToolbox(false) : undefined}
-            // tableFields={convertTableFieldsToToolboxFields(tableFields)}
             tableFields={convertedTableFields}
-            loadingFields={loadingFields}
           />
         </div>
       )}
