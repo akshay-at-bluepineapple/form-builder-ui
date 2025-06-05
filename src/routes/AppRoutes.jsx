@@ -14,6 +14,10 @@ const router = createBrowserRouter([
     Component: FormBuilderViewEdit,
   },
   {
+    path: '/forms/:id',
+    Component: FormBuilderViewEdit,
+  },
+  {
     path: '/forms/:id/edit',
     Component: FormBuilderViewEdit,
   },
