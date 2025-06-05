@@ -22,9 +22,7 @@ function FormListing() {
       `http://localhost:8000/api/v1/form/soft-delete/${formId}/`
     );
     if (success) {
-      setData((prevForms) =>
-        prevForms.filter((form) => form.formId !== selectedForm.formId)
-      );
+      setData((prevForms) => prevForms.filter((form) => form.id !== formId));
       setShowDeleteModal(false);
       setSelectedForm(null);
     } else {
@@ -77,7 +75,7 @@ function FormListing() {
                         <button
                           type="button"
                           onClick={() =>
-                            navigate(`/forms/${index}/edit`, {
+                            navigate(`/forms/${form.id}`, {
                               state: { preview: true, form },
                             })
                           }
@@ -88,7 +86,7 @@ function FormListing() {
                         <button
                           type="button"
                           onClick={() =>
-                            navigate(`/forms/${index}/edit`, {
+                            navigate(`/forms/${form.id}/edit`, {
                               state: { preview: false, form },
                             })
                           }

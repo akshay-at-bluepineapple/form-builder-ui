@@ -14,9 +14,11 @@ import { useLocation } from 'react-router-dom';
 import FormPreview from './FormPreview';
 import { usePut } from '../hooks/usePut';
 import { usePost } from '../hooks/usePost';
+import { useNavigate } from 'react-router-dom';
 
 export default function FormBuilderViewEdit() {
   const location = useLocation();
+  const navigate = useNavigate();
   const isPreview = location.state?.preview;
   const formData = location.state?.form || {};
   const [sections, setSections] = useState(formData.sections || []);
@@ -36,6 +38,8 @@ export default function FormBuilderViewEdit() {
   const [isMobileView, setIsMobileView] = useState(false);
   const [showToolbox, setShowToolbox] = useState(true);
   const [fieldValues, setFieldValues] = useState({});
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const [formMetadata, setFormMetadata] = useState({
     form_name: formData.form_name || '',
@@ -354,9 +358,19 @@ export default function FormBuilderViewEdit() {
     );
   };
 
-  const handleCancelForm = () => {};
+  const handleCancelForm = () => {
+    navigate('/');
+  };
 
   const handleSaveForm = async () => {
+    const trimmedFormName = formMetadata.form_name.trim();
+
+    if (!trimmedFormName) {
+      setErrorMessage('Form name cannot be empty.');
+      setTimeout(() => setErrorMessage(''), 2000);
+      return;
+    }
+
     const formIdFromInitialData = formData?.id;
     const isEditMode = !!formIdFromInitialData;
 
@@ -442,9 +456,15 @@ export default function FormBuilderViewEdit() {
       let result;
       if (isEditMode) {
         result = await put(formDataToSave);
+        setSuccessMessage('Form successfully updated!');
       } else {
         result = await post(formDataToSave);
+        setSuccessMessage('Form successfully created!');
       }
+      setTimeout(() => {
+        setSuccessMessage('');
+        navigate('/');
+      }, 2000);
     } catch (error) {
       console.error('Error saving form:', error);
     }
@@ -475,6 +495,16 @@ export default function FormBuilderViewEdit() {
 
   return (
     <div className="flex flex-col md:flex-row h-screen">
+      {successMessage && (
+        <div className="fixed top-4 right-4 bg-green-100 border border-green-500 text-green-700 px-4 py-2 rounded shadow-md z-50">
+          {successMessage}
+        </div>
+      )}
+      {errorMessage && (
+        <div className="fixed top-4 right-4 bg-red-100 border border-red-500 text-red-700 px-4 py-2 rounded shadow-md z-50">
+          {errorMessage}
+        </div>
+      )}
       {isMobileView && (
         <button
           onClick={() => setShowToolbox(!showToolbox)}
@@ -483,7 +513,7 @@ export default function FormBuilderViewEdit() {
           {showToolbox ? '✕' : '🧰'}
         </button>
       )}
-      {(showToolbox || !isMobileView) && (
+      {(showToolbox || !isMobileView) && !previewMode && (
         <div
           className={`${
             isMobileView
@@ -530,74 +560,76 @@ export default function FormBuilderViewEdit() {
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2 mb-4">
-          <div className="flex pb-2 max-w-full overflow-x-auto space-x-2">
-            {sections.map((section) => (
-              <div
-                key={section.id}
-                className="relative flex items-center space-x-1 bg-gray-100 rounded px-2 py-1 mr-2"
-              >
-                {editingSectionId === section.id ? (
-                  <input
-                    type="text"
-                    autoFocus
-                    value={tempSectionName}
-                    onChange={(e) => setTempSectionName(e.target.value)}
-                    onBlur={() =>
-                      updateSectionName(section.id, tempSectionName)
-                    }
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter')
-                        updateSectionName(section.id, tempSectionName);
-                      if (e.key === 'Escape') cancelSectionEdit();
-                    }}
-                    className="px-3 py-1 rounded border text-sm"
-                  />
-                ) : (
+        {!previewMode && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex pb-2 max-w-full overflow-x-auto space-x-2">
+              {sections.map((section) => (
+                <div
+                  key={section.id}
+                  className="relative flex items-center space-x-1 bg-gray-100 rounded px-2 py-1 mr-2"
+                >
+                  {editingSectionId === section.id ? (
+                    <input
+                      type="text"
+                      autoFocus
+                      value={tempSectionName}
+                      onChange={(e) => setTempSectionName(e.target.value)}
+                      onBlur={() =>
+                        updateSectionName(section.id, tempSectionName)
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter')
+                          updateSectionName(section.id, tempSectionName);
+                        if (e.key === 'Escape') cancelSectionEdit();
+                      }}
+                      className="px-3 py-1 rounded border text-sm"
+                    />
+                  ) : (
+                    <button
+                      onClick={() => setActiveSection(section.id)}
+                      onDoubleClick={() => {
+                        setEditingSectionId(section.id);
+                        setTempSectionName(section.section_name);
+                      }}
+                      className={`px-3 py-1 rounded whitespace-nowrap ${
+                        section.id === activeSection
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-200 text-gray-800'
+                      }`}
+                    >
+                      {section.section_name}
+                    </button>
+                  )}
                   <button
-                    onClick={() => setActiveSection(section.id)}
-                    onDoubleClick={() => {
-                      setEditingSectionId(section.id);
-                      setTempSectionName(section.section_name);
-                    }}
-                    className={`px-3 py-1 rounded whitespace-nowrap ${
-                      section.id === activeSection
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-200 text-gray-800'
-                    }`}
+                    onClick={() => deleteSection(section.id)}
+                    className="text-red-600 text-sm hover:text-red-700 mr-2 mt-4"
+                    title="Delete section"
                   >
-                    {section.section_name}
+                    ❌
                   </button>
-                )}
-                <button
-                  onClick={() => deleteSection(section.id)}
-                  className="text-red-600 text-sm hover:text-red-700 mr-2 mt-4"
-                  title="Delete section"
-                >
-                  ❌
-                </button>
-                <button
-                  onClick={() => toggleSectionCollapse(section.id)}
-                  className="absolute right-[14px] -top-0 text-sm text-gray-500 hover:text-black"
-                >
-                  {section.is_collapsable ? '➕' : '➖'}
-                </button>
-              </div>
-            ))}
+                  <button
+                    onClick={() => toggleSectionCollapse(section.id)}
+                    className="absolute right-[14px] -top-0 text-sm text-gray-500 hover:text-black"
+                  >
+                    {section.is_collapsable ? '➕' : '➖'}
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => setPreviewMode(!previewMode)}
+              className="ml-auto bg-yellow-600 text-white px-2 h-10 rounded text-sm md:text-base"
+            >
+              {previewMode ? '🛠 Back to Builder' : '👁 Preview'}
+            </button>
+            <button
+              onClick={() => setShowJson(true)}
+              className="bg-gray-700 text-white px-2 rounded h-10 text-sm md:text-base hidden"
+            >
+              📋 Show JSON
+            </button>
           </div>
-          <button
-            onClick={() => setPreviewMode(!previewMode)}
-            className="ml-auto bg-yellow-600 text-white px-2 h-10 rounded text-sm md:text-base"
-          >
-            {previewMode ? '🛠 Back to Builder' : '👁 Preview'}
-          </button>
-          <button
-            onClick={() => setShowJson(true)}
-            className="bg-gray-700 text-white px-2 rounded h-10 text-sm md:text-base"
-          >
-            📋 Show JSON
-          </button>
-        </div>
+        )}
 
         {!previewMode ? (
           <>
