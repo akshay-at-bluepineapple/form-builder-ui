@@ -40,6 +40,12 @@ export default function FormBuilderViewEdit() {
   const [fieldValues, setFieldValues] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  // New states for table dropdown functionality
+  const [tables, setTables] = useState([]);
+  const [selectedTable, setSelectedTable] = useState(formData.table_name || '');
+  const [tableFields, setTableFields] = useState([]);
+  const [loadingTables, setLoadingTables] = useState(false);
+  const [loadingFields, setLoadingFields] = useState(false);
 
   const [formMetadata, setFormMetadata] = useState({
     form_name: formData.form_name || '',
@@ -51,6 +57,105 @@ export default function FormBuilderViewEdit() {
     `http://localhost:8000/api/v1/form/create-update/${formData?.id}/`
   );
   const { post } = usePost(`http://localhost:8000/api/v1/form/create/`);
+
+  // Custom fetch functions for tables
+  const fetchTables = async () => {
+    setLoadingTables(true);
+    try {
+      const response = await fetch('http://localhost:8000/api/v1/tables/');
+      if (!response.ok) throw new Error('Failed to fetch tables');
+      const data = await response.json();
+      setTables(data?.tables || data);
+    } catch (error) {
+      console.error('Error fetching tables:', error);
+      setErrorMessage('Failed to fetch tables');
+      setTimeout(() => setErrorMessage(''), 2000);
+    } finally {
+      setLoadingTables(false);
+    }
+  };
+
+  // Custom fetch functions for fields
+  const fetchTableFields = async (tableName) => {
+    if (!tableName) return;
+    setLoadingFields(true);
+    try {
+      const response = await fetch(
+        `http://localhost:8000/api/v1/tables/${tableName}/fields/`
+      );
+      if (!response.ok) throw new Error('Failed to fetch table fields');
+      const data = await response.json();
+      setTableFields(data?.fields || []);
+    } catch (error) {
+      console.error('Error fetching table fields:', error);
+      setErrorMessage('Failed to fetch table fields');
+      setTimeout(() => setErrorMessage(''), 2000);
+    } finally {
+      setLoadingFields(false);
+    }
+  };
+
+  console.log(tableFields, 'tablefields');
+
+  // Function to convert database field type to form field type
+  const convertDbTypeToFieldType = (dbType) => {
+    const type = dbType.toLowerCase();
+
+    if (type.includes('varchar') || type.includes('char')) return 'text';
+    if (type.includes('text') || type.includes('longtext')) return 'textarea';
+    if (type.includes('int') || type.includes('bigint')) return 'number';
+    if (
+      type.includes('decimal') ||
+      type.includes('float') ||
+      type.includes('double')
+    )
+      return 'number';
+    if (type.includes('date') && !type.includes('time')) return 'date';
+    if (type.includes('datetime') || type.includes('timestamp'))
+      return 'datetime';
+    if (type.includes('time')) return 'time';
+    if (type.includes('tinyint(1)')) return 'checkbox';
+    if (type.includes('email')) return 'email';
+
+    return 'text'; // Default fallback
+  };
+
+  // Convert table fields to toolbox format
+  const convertTableFieldsToToolboxFields = (fields) => {
+    console.log('HHHHHHHHH');
+    console.log(fields, 'fields');
+    return fields.map((field) => ({
+      type: convertDbTypeToFieldType(field.type),
+      field_type: convertDbTypeToFieldType(field.type),
+      label: field.name
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, (l) => l.toUpperCase()),
+      db_column_name: field.name,
+      required: field.required === 'YES',
+      data_type: field.type,
+      isFromDatabase: true,
+    }));
+  };
+
+  useEffect(() => {
+    if (sections.length > 0 && !sections.find((s) => s.id === activeSection)) {
+      setActiveSection(sections[0].id);
+    }
+  }, [sections, activeSection]);
+
+  // Fetch tables when component mounts
+  useEffect(() => {
+    fetchTables();
+  }, []);
+
+  // Fetch fields when selected table changes
+  useEffect(() => {
+    if (selectedTable) {
+      fetchTableFields(selectedTable);
+    } else {
+      setTableFields([]);
+    }
+  }, [selectedTable]);
 
   useEffect(() => {
     const checkMobileView = () => {
@@ -68,6 +173,16 @@ export default function FormBuilderViewEdit() {
       setShowToolbox(true);
     }
   }, [isMobileView]);
+
+  // Handle table selection
+  const handleTableChange = (e) => {
+    const tableName = e.target.value;
+    setSelectedTable(tableName);
+    setFormMetadata((prev) => ({
+      ...prev,
+      table_name: tableName,
+    }));
+  };
 
   const getDataTypeFromFieldType = (fieldType) => {
     const typeMap = {
@@ -487,12 +602,6 @@ export default function FormBuilderViewEdit() {
     }
   };
 
-  useEffect(() => {
-    if (sections.length > 0 && !sections.find((s) => s.id === activeSection)) {
-      setActiveSection(sections[0].id);
-    }
-  }, [sections, activeSection]);
-
   return (
     <div className="flex flex-col md:flex-row h-screen">
       {successMessage && (
@@ -527,37 +636,107 @@ export default function FormBuilderViewEdit() {
             onAddSection={addNewSection}
             isMobileView={isMobileView}
             onClose={isMobileView ? () => setShowToolbox(false) : undefined}
+            tableFields={convertTableFieldsToToolboxFields(tableFields)}
+            loadingFields={loadingFields}
           />
         </div>
       )}
       <div
-        className={`flex-1 p-4 md:p-6 overflow-auto ${
+        className={`flex-1 p-4 overflow-auto ${
           isMobileView && showToolbox ? 'hidden' : 'block'
         }`}
       >
-        <div className="mb-4 flex items-center gap-2">
-          <label htmlFor="form-name" className="text-sm font-semibold">
-            Form Name:
-          </label>
-          {!isPreview ? (
-            <input
-              id="form-name"
-              type="text"
-              value={formMetadata.form_name}
-              onChange={(e) =>
-                setFormMetadata((prev) => ({
-                  ...prev,
-                  form_name: e.target.value,
-                }))
-              }
-              placeholder="Enter form name"
-              className="border px-3 py-1 rounded w-full md:w-1/3 text-sm"
-            />
-          ) : (
-            <span className="px-3 py-1 bg-gray-100 rounded w-full md:w-1/3 text-sm text-gray-700">
-              {formMetadata.form_name}
-            </span>
-          )}
+        <div className="mb-4 border-b border-gray-300 pb-4">
+          <div className="flex justify-between items-center flex-wrap gap-4">
+            <div className="flex items-center">
+              <label htmlFor="form-name" className="text-sm font-semibold mr-2">
+                Form Name :
+              </label>
+              {!isPreview ? (
+                <input
+                  id="form-name"
+                  type="text"
+                  value={formMetadata.form_name}
+                  onChange={(e) =>
+                    setFormMetadata((prev) => ({
+                      ...prev,
+                      form_name: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter form name"
+                  className="border px-3 py-1.5 rounded text-sm"
+                />
+              ) : (
+                <span className="px-3 py-1 bg-gray-100 rounded w-full md:w-1/3 text-sm text-gray-700">
+                  {formMetadata.form_name}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center">
+              <label
+                htmlFor="table-select"
+                className="text-sm font-semibold mr-2"
+              >
+                Table :
+              </label>
+              {!isPreview ? (
+                <select
+                  id="table-select"
+                  value={selectedTable}
+                  onChange={handleTableChange}
+                  disabled={loadingTables}
+                  className="border px-3 py-1.5 rounded text-sm min-w-32"
+                >
+                  <option value="">
+                    {loadingTables ? 'Loading tables...' : 'Select Table'}
+                  </option>
+                  {tables.map((table) => {
+                    const tableName = table.name || table;
+                    const label = tableName
+                      .split('_')
+                      .pop()
+                      .replace(/\b\w/g, (l) => l.toUpperCase());
+
+                    return (
+                      <option key={tableName} value={tableName}>
+                        {label}
+                      </option>
+                    );
+                  })}
+                </select>
+              ) : (
+                <span className="px-3 py-1 bg-gray-100 rounded text-sm text-gray-700">
+                  {selectedTable || 'No table selected'}
+                </span>
+              )}
+            </div>
+            <div className="flex gap-2 ml-auto">
+              <button
+                onClick={() => setPreviewMode(!previewMode)}
+                className="bg-yellow-600 text-white px-3 py-1.5 rounded text-sm md:text-base"
+              >
+                {previewMode ? 'Back to Builder' : 'Preview'}
+              </button>
+              <button
+                onClick={() => setShowJson(true)}
+                className="bg-gray-700 text-white px-3 py-1.5 rounded text-sm md:text-base hidden"
+              >
+                📋 Show JSON
+              </button>
+              <button
+                onClick={handleCancelForm}
+                className="bg-gray-500 text-white px-4 py-1.5 rounded hover:bg-gray-600 text-sm md:text-base"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveForm}
+                className="bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700 text-sm md:text-base"
+              >
+                Save
+              </button>
+            </div>
+          </div>
         </div>
 
         {!previewMode && (
@@ -616,18 +795,6 @@ export default function FormBuilderViewEdit() {
                 </div>
               ))}
             </div>
-            <button
-              onClick={() => setPreviewMode(!previewMode)}
-              className="ml-auto bg-yellow-600 text-white px-2 h-10 rounded text-sm md:text-base"
-            >
-              {previewMode ? '🛠 Back to Builder' : '👁 Preview'}
-            </button>
-            <button
-              onClick={() => setShowJson(true)}
-              className="bg-gray-700 text-white px-2 rounded h-10 text-sm md:text-base hidden"
-            >
-              📋 Show JSON
-            </button>
           </div>
         )}
 
@@ -750,20 +917,6 @@ export default function FormBuilderViewEdit() {
             >
               + Add Row
             </button>
-            <div className="mt-6 flex justify-end gap-4">
-              <button
-                onClick={handleCancelForm}
-                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveForm}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-              >
-                Save
-              </button>
-            </div>
           </>
         ) : (
           <>
