@@ -1,16 +1,5 @@
 import React from 'react';
 
-const TOOLBOX_FIELDS = [
-  { id: 'text', label: 'Text Input', field_type: 'text', required: false },
-  {
-    id: 'checkbox',
-    label: 'Checkbox',
-    field_type: 'checkbox',
-    required: false,
-  },
-  { id: 'date', label: 'Date Picker', field_type: 'date', required: false },
-];
-
 export default function Toolbox({
   onDragStart,
   onDragEnd,
@@ -18,13 +7,7 @@ export default function Toolbox({
   isMobileView,
   onClose,
   tableFields,
-  loadingFields,
 }) {
-  console.log('HHHH');
-
-  console.log(tableFields, 'tableFields');
-  console.log(loadingFields, 'loadingFields');
-
   return (
     <div className="h-full flex flex-col p-5 bg-gray-50 shadow-[4px_0_10px_rgba(0,0,0,0.1)]">
       {isMobileView && onClose && (
@@ -52,7 +35,7 @@ export default function Toolbox({
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-1 gap-2 max-h-[82vh] overflow-y-auto">
-        {TOOLBOX_FIELDS.map((field) => (
+        {tableFields?.map((field) => (
           <div
             key={field.id}
             className="cursor-move bg-white p-2 rounded shadow-md"

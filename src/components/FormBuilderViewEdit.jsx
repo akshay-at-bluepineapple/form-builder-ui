@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { DndContext } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -95,10 +95,9 @@ export default function FormBuilderViewEdit() {
     }
   };
 
-  console.log(tableFields, 'tablefields');
-
   // Function to convert database field type to form field type
   const convertDbTypeToFieldType = (dbType) => {
+    console.log(dbType, 'dbType');
     const type = dbType.toLowerCase();
 
     if (type.includes('varchar') || type.includes('char')) return 'text';
@@ -114,28 +113,40 @@ export default function FormBuilderViewEdit() {
     if (type.includes('datetime') || type.includes('timestamp'))
       return 'datetime';
     if (type.includes('time')) return 'time';
-    if (type.includes('tinyint(1)')) return 'checkbox';
+    if (type.includes('tinyint')) return 'checkbox';
     if (type.includes('email')) return 'email';
 
     return 'text'; // Default fallback
   };
 
-  // Convert table fields to toolbox format
-  const convertTableFieldsToToolboxFields = (fields) => {
-    console.log('HHHHHHHHH');
-    console.log(fields, 'fields');
-    return fields.map((field) => ({
-      type: convertDbTypeToFieldType(field.type),
-      field_type: convertDbTypeToFieldType(field.type),
-      label: field.name
-        .replace(/_/g, ' ')
-        .replace(/\b\w/g, (l) => l.toUpperCase()),
-      db_column_name: field.name,
-      required: field.required === 'YES',
-      data_type: field.type,
-      isFromDatabase: true,
-    }));
-  };
+  const convertedTableFields = useMemo(() => {
+    if (
+      !tableFields ||
+      !Array.isArray(tableFields) ||
+      tableFields.length === 0
+    ) {
+      return [];
+    }
+    return tableFields
+      .map((field) => {
+        if (!field || !field.name) {
+          console.warn('Invalid field structure:', field);
+          return null;
+        }
+        return {
+          type: convertDbTypeToFieldType(field.type || 'text'),
+          field_type: convertDbTypeToFieldType(field.type || 'text'),
+          label: field.name
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, (l) => l.toUpperCase()),
+          db_column_name: field.name,
+          required: field.required === 'YES',
+          data_type: field.type || 'varchar(255)',
+          isFromDatabase: true,
+        };
+      })
+      .filter(Boolean);
+  }, [tableFields]);
 
   useEffect(() => {
     if (sections.length > 0 && !sections.find((s) => s.id === activeSection)) {
@@ -636,7 +647,8 @@ export default function FormBuilderViewEdit() {
             onAddSection={addNewSection}
             isMobileView={isMobileView}
             onClose={isMobileView ? () => setShowToolbox(false) : undefined}
-            tableFields={convertTableFieldsToToolboxFields(tableFields)}
+            // tableFields={convertTableFieldsToToolboxFields(tableFields)}
+            tableFields={convertedTableFields}
             loadingFields={loadingFields}
           />
         </div>
