@@ -38,7 +38,11 @@ function FormListing() {
             Forms
           </h1>
           <button
-            onClick={() => navigate('/forms/new')}
+            onClick={() =>
+              navigate('/forms/new', {
+                state: { create: true },
+              })
+            }
             className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded transition text-sm"
           >
             Create Form
@@ -64,7 +68,7 @@ function FormListing() {
               <tbody className="divide-y divide-gray-100">
                 {forms.map((form, index) => (
                   <tr
-                    key={form.formId}
+                    key={form.id}
                     className="bg-white hover:bg-gray-50 transition shadow rounded"
                   >
                     <td className="px-4 py-3">
