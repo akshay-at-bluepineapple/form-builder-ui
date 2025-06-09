@@ -20,6 +20,7 @@ export default function FormBuilderViewEdit() {
   const location = useLocation();
   const navigate = useNavigate();
   const isPreview = location.state?.preview;
+  const mode = location.state?.create;
   const formData = location.state?.form || {};
   const [sections, setSections] = useState(formData.sections || []);
 
@@ -49,7 +50,7 @@ export default function FormBuilderViewEdit() {
 
   const [formMetadata, setFormMetadata] = useState({
     form_name: formData.form_name || '',
-    table_name: formData.table_name || 'product',
+    table_name: formData.table_name || 'product_product',
     submit_api_route: formData.submit_api_route || 'https://submit.com/form/',
   });
 
@@ -152,12 +153,10 @@ export default function FormBuilderViewEdit() {
     }
   }, [sections, activeSection]);
 
-  // Fetch tables when component mounts
   useEffect(() => {
     fetchTables();
   }, []);
 
-  // Fetch fields when selected table changes
   useEffect(() => {
     if (selectedTable) {
       fetchTableFields(selectedTable);
@@ -495,6 +494,12 @@ export default function FormBuilderViewEdit() {
       return;
     }
 
+    if (!selectedTable) {
+      setErrorMessage('Table name cannot be empty.');
+      setTimeout(() => setErrorMessage(''), 2000);
+      return;
+    }
+
     const formIdFromInitialData = formData?.id;
     const isEditMode = !!formIdFromInitialData;
 
@@ -610,7 +615,6 @@ export default function FormBuilderViewEdit() {
         return 'w-full';
     }
   };
-
   return (
     <div className="flex flex-col md:flex-row h-screen">
       {successMessage && (
@@ -687,7 +691,7 @@ export default function FormBuilderViewEdit() {
               >
                 Table :
               </label>
-              {!isPreview ? (
+              {mode ? (
                 <select
                   id="table-select"
                   value={selectedTable}
