@@ -7,7 +7,6 @@ export function usePost(url) {
   const post = async (data) => {
     setLoading(true);
     setError(null);
-    console.log(url, data, 'post data and url');
     try {
       const response = await fetch(url, {
         method: 'POST',
@@ -16,7 +15,6 @@ export function usePost(url) {
         },
         body: JSON.stringify(data),
       });
-      console.log(response, 'post response');
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'POST request failed');
