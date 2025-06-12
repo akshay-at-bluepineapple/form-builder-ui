@@ -54,7 +54,7 @@ export default function Toolbox({
             onDragStart={() => onDragStart(field)}
             onDragEnd={onDragEnd}
           >
-            {field.label}
+            {`${field.label} (${field.field_type})`}
           </div>
         ))}
       </div>
