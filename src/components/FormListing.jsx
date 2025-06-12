@@ -56,7 +56,7 @@ function FormListing() {
         {error && (
           <p className="text-center mt-4 text-red-500">Error: {error}</p>
         )}
-        {forms && (
+        {forms && forms.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-sm md:text-base border-separate border-spacing-y-2">
               <thead className="bg-gray-200 text-gray-600 uppercase text-xs tracking-wider">
@@ -115,6 +115,10 @@ function FormListing() {
               </tbody>
             </table>
           </div>
+        ) : (
+          <p className="text-center text-gray-500 text-base mt-10">
+            No forms found. Start by creating a new one!
+          </p>
         )}
       </div>
 

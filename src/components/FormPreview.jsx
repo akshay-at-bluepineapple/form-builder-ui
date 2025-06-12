@@ -5,6 +5,7 @@ export default function FormPreview({
   getColumnWidth,
   fieldValues,
   handleFieldInputChange,
+  tableData,
 }) {
   return (
     <div className="space-y-8">
@@ -34,7 +35,8 @@ export default function FormPreview({
                                 config,
                                 fieldType,
                                 fieldValues,
-                                handleFieldInputChange
+                                handleFieldInputChange,
+                                tableData
                               )}
                             </div>
                           );
@@ -56,7 +58,8 @@ function renderField(
   config,
   fieldType,
   fieldValues,
-  handleFieldInputChange
+  handleFieldInputChange,
+  tableData
 ) {
   switch (fieldType) {
     case 'text':
@@ -68,10 +71,20 @@ function renderField(
           </label>
           <input
             type="text"
-            placeholder={config.placeholder}
+            placeholder={`Enter ${config.label}`}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none transition-colors"
-            value={fieldValues[field.id] || ''}
-            onChange={(e) => handleFieldInputChange(field.id, e.target.value)}
+            value={
+              fieldValues?.[field.db_column_name] ??
+              tableData?.data?.[0]?.[field.db_column_name] ??
+              ''
+            }
+            onChange={(e) =>
+              handleFieldInputChange(
+                field.id,
+                field.db_column_name,
+                e.target.value
+              )
+            }
           />
         </div>
       );
@@ -83,9 +96,17 @@ function renderField(
               id={field.id}
               type="checkbox"
               className="size-4 text-blue-600 border-gray-300 rounded"
-              checked={fieldValues[field.id] || ''}
+              checked={
+                fieldValues?.[field.db_column_name] ??
+                tableData?.data?.[0]?.[field.db_column_name] ??
+                ''
+              }
               onChange={(e) =>
-                handleFieldInputChange(field.id, e.target.checked)
+                handleFieldInputChange(
+                  field.id,
+                  field.db_column_name,
+                  e.target.checked
+                )
               }
             />
           </div>
@@ -107,10 +128,20 @@ function renderField(
           </label>
           <input
             type="number"
-            placeholder={config.placeholder}
+            placeholder={`Enter ${config.label}`}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none transition-colors"
-            value={fieldValues[field.id] || ''}
-            onChange={(e) => handleFieldInputChange(field.id, e.target.value)}
+            value={
+              fieldValues?.[field.db_column_name] ??
+              tableData?.data?.[0]?.[field.db_column_name] ??
+              ''
+            }
+            onChange={(e) =>
+              handleFieldInputChange(
+                field.id,
+                field.db_column_name,
+                e.target.value
+              )
+            }
           />
         </div>
       );
@@ -125,8 +156,18 @@ function renderField(
             <input
               type="date"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none transition-colors"
-              value={fieldValues[field.id] || ''}
-              onChange={(e) => handleFieldInputChange(field.id, e.target.value)}
+              value={
+                fieldValues?.[field.db_column_name] ??
+                tableData?.data?.[0]?.[field.db_column_name] ??
+                ''
+              }
+              onChange={(e) =>
+                handleFieldInputChange(
+                  field.id,
+                  field.db_column_name,
+                  e.target.value
+                )
+              }
             />
             <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
               <svg
@@ -144,6 +185,33 @@ function renderField(
               </svg>
             </div>
           </div>
+        </div>
+      );
+    case 'radio':
+      return (
+        <div className="flex items-center py-2">
+          <div className="flex items-center h-5">
+            <input
+              id={field.id}
+              type="radio"
+              className="size-4 text-blue-600 border-gray-300 rounded"
+              checked={fieldValues[field.db_column_name] || ''}
+              onChange={(e) =>
+                handleFieldInputChange(
+                  field.id,
+                  field.db_column_name,
+                  e.target.checked
+                )
+              }
+            />
+          </div>
+          <label
+            htmlFor={field.id}
+            className="ml-2 block text-sm text-gray-700"
+          >
+            {config.label}
+            {config.required && <span className="text-red-500 ml-1">*</span>}
+          </label>
         </div>
       );
     default:
