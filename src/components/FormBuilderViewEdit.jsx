@@ -15,6 +15,7 @@ import FormPreview from './FormPreview';
 import { usePut } from '../hooks/usePut';
 import { usePost } from '../hooks/usePost';
 import { useNavigate } from 'react-router-dom';
+import { useFetch } from '../hooks/useFetch';
 
 export default function FormBuilderViewEdit() {
   const location = useLocation();
@@ -53,17 +54,33 @@ export default function FormBuilderViewEdit() {
     table_name: formData.table_name || 'product_product',
     submit_api_route: formData.submit_api_route || 'https://submit.com/form/',
   });
-
   const { put } = usePut(
     `http://localhost:8000/api/v1/form/create-update/${formData?.id}/`
   );
+
+  const { put: putFieldValues } = usePut(
+    `http://localhost:8000/api/v1/form/field-values-submission/`
+  );
+
   const { post } = usePost(`http://localhost:8000/api/v1/form/create/`);
 
-  // Custom fetch functions for tables
+  const { post: postFieldValues } = usePost(
+    'http://localhost:8000/api/v1/form/field-values-submission/'
+  );
+
+  const { data: tableData } = useFetch(
+    formData?.table_name
+      ? `http://localhost:8000/api/v1/tables/${formData.table_name}/data/`
+      : null
+  );
+
   const fetchTables = async () => {
     setLoadingTables(true);
     try {
-      const response = await fetch('http://localhost:8000/api/v1/tables/');
+      // const response = await fetch('http://localhost:8000/api/v1/tables/');
+      const response = await fetch(
+        'http://localhost:8000/api/v1/tables/empty/'
+      );
       if (!response.ok) throw new Error('Failed to fetch tables');
       const data = await response.json();
       setTables(data?.tables || data);
@@ -99,7 +116,7 @@ export default function FormBuilderViewEdit() {
   // Function to convert database field type to form field type
   const convertDbTypeToFieldType = (dbType) => {
     const type = dbType.toLowerCase();
-    if (type.includes('tinyint') || type.includes('boolean')) return 'checkbox';
+    if (type.includes('tinyint') || type.includes('boolean')) return 'radio';
     if (
       type.includes('decimal') ||
       type.includes('float') ||
@@ -182,7 +199,6 @@ export default function FormBuilderViewEdit() {
     }
   }, [isMobileView]);
 
-  // Handle table selection
   const handleTableChange = (e) => {
     const tableName = e.target.value;
     setSelectedTable(tableName);
@@ -202,8 +218,7 @@ export default function FormBuilderViewEdit() {
       date: 'date',
       datetime: 'datetime',
       time: 'time',
-      checkbox: 'boolean',
-      radio: 'varchar(100)',
+      radio: 'tinyint',
       select: 'varchar(255)',
       file: 'varchar(500)',
       phone: 'varchar(20)',
@@ -464,10 +479,10 @@ export default function FormBuilderViewEdit() {
     );
   };
 
-  const handleFieldInputChange = (fieldId, fieldValue) => {
+  const handleFieldInputChange = (fieldId, dbColumnName, fieldValue) => {
     setFieldValues((prev) => ({
       ...prev,
-      [fieldId]: fieldValue,
+      [dbColumnName]: fieldValue,
     }));
   };
 
@@ -586,10 +601,37 @@ export default function FormBuilderViewEdit() {
       if (isEditMode) {
         result = await put(formDataToSave);
         setSuccessMessage('Form successfully updated!');
+        if (tableData?.data?.[0]?.id) {
+          await handleSubmitFilledForm();
+        } else {
+          if (fieldValues && Object.keys(fieldValues).length > 0) {
+            const fieldValuePayload = {
+              table_name: formMetadata.table_name,
+              field_values: fieldValues,
+            };
+            await postFieldValues(fieldValuePayload);
+          }
+        }
       } else {
         result = await post(formDataToSave);
         setSuccessMessage('Form successfully created!');
+        if (fieldValues && Object.keys(fieldValues).length > 0) {
+          const fieldValuePayload = {
+            table_name: formMetadata.table_name,
+            field_values: fieldValues,
+          };
+
+          try {
+            await postFieldValues(fieldValuePayload);
+          } catch (submitError) {
+            console.error(
+              'Error submitting initial field values:',
+              submitError
+            );
+          }
+        }
       }
+
       setTimeout(() => {
         setSuccessMessage('');
         navigate('/');
@@ -597,6 +639,39 @@ export default function FormBuilderViewEdit() {
     } catch (error) {
       console.error('Error saving form:', error);
     }
+  };
+
+  const handleSubmitFilledForm = async () => {
+    if (fieldValues && Object.keys(fieldValues).length > 0) {
+      const updatedFieldValues = {
+        ...fieldValues,
+        id: tableData?.data?.[0]?.id,
+      };
+      const payload = {
+        table_name: formMetadata.table_name,
+        field_values: updatedFieldValues,
+      };
+
+      try {
+        if (tableData?.data?.[0]?.id) {
+          await putFieldValues(payload);
+        } else {
+          const fieldValuePayload = {
+            table_name: formMetadata.table_name,
+            field_values: fieldValues,
+          };
+          await postFieldValues(fieldValuePayload);
+        }
+
+        setSuccessMessage('Form values updated successfully!');
+        setTimeout(() => setSuccessMessage(''), 2000);
+      } catch (error) {
+        console.error('Error updating field values:', error);
+        setErrorMessage('Failed to update form values');
+        setTimeout(() => setErrorMessage(''), 3000);
+      }
+    }
+    return;
   };
 
   const getColumnWidth = (columnsCount) => {
@@ -702,7 +777,7 @@ export default function FormBuilderViewEdit() {
                   <option value="">
                     {loadingTables ? 'Loading tables...' : 'Select Table'}
                   </option>
-                  {tables.map((table) => {
+                  {tables?.map((table) => {
                     const tableName = table.name || table;
                     const label = tableName
                       .split('_')
@@ -725,7 +800,9 @@ export default function FormBuilderViewEdit() {
             <div className="flex gap-2 ml-auto">
               <button
                 onClick={() => setPreviewMode(!previewMode)}
-                className="bg-yellow-600 text-white px-3 py-1.5 rounded text-sm md:text-base"
+                className={`${
+                  location.state?.preview ? 'hidden' : ''
+                } bg-yellow-600 text-white px-3 py-1.5 rounded text-sm md:text-base`}
               >
                 {previewMode ? 'Back to Builder' : 'Preview'}
               </button>
@@ -739,10 +816,14 @@ export default function FormBuilderViewEdit() {
                 onClick={handleCancelForm}
                 className="bg-gray-500 text-white px-4 py-1.5 rounded hover:bg-gray-600 text-sm md:text-base"
               >
-                Cancel
+                {location.state?.preview ? 'Back' : 'Cancel'}
               </button>
               <button
-                onClick={handleSaveForm}
+                onClick={
+                  !previewMode || !mode
+                    ? handleSaveForm
+                    : handleSubmitFilledForm
+                }
                 className="bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700 text-sm md:text-base"
               >
                 Save
@@ -937,6 +1018,7 @@ export default function FormBuilderViewEdit() {
               getColumnWidth={getColumnWidth}
               fieldValues={fieldValues}
               handleFieldInputChange={handleFieldInputChange}
+              tableData={tableData}
             />
           </>
         )}
